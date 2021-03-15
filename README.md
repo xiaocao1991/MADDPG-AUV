@@ -46,13 +46,16 @@ Next:
 Train the NN network:
 Run in CMD -> python main.py
 
+
 Then, when the NN is trained you can visualize the polots on tensorBoard by:
 
 Run in CMD -> tensorboard --logdir=./log/ --host=127.0.0.1
 
 Run in web -> http://localhost:6006/
 
+
 Clean:
+
 remove all files in "model_dir" and "log" folders
 
 Part of this has been obtained from [link](https://arztsamuel.github.io/en/blogs/2018/Gym-and-Baselines-on-Windows.html) and [link](https://knowledge.udacity.com/questions/131475), see them for further information.
