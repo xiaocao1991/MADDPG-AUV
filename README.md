@@ -18,7 +18,9 @@ I have followed the next steps to set up my Windows computer to run the algorith
 - pip install pytorch==1.5.0 torchvision==0.6.0 cudatoolkit=9.2 -c pytorch
 - pip install tensorflow==2.1.0
 - git clone https://github.com/openai/gym.git
+
   cd gym
+ 
   pip install -e .
   
 Test (optional):
@@ -26,7 +28,9 @@ Test (optional):
 
 Next:
 - git clone https://github.com/openai/baselines.git
+
   cd baselines
+  
   pip install -e .
   
 Test (opitonal):
