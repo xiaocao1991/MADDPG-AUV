@@ -62,3 +62,9 @@ remove all files in "model_dir" and "log" folders
 
 Part of this has been obtained from [link](https://arztsamuel.github.io/en/blogs/2018/Gym-and-Baselines-on-Windows.html) and [link](https://knowledge.udacity.com/questions/131475), see them for further information.
 
+
+## Rewars
+
+It was not straightforward implementation. The algorithm is based on Pytorch, and therefore, it is different from the providecd by the original implementation [MADDPG](https://github.com/openai/maddpg). Nonetheless, finally I could obtain a quite satisfactory result, which is shown below.
+
+
