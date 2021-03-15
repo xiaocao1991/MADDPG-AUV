@@ -63,10 +63,38 @@ remove all files in "model_dir" and "log" folders
 Part of this has been obtained from [link](https://arztsamuel.github.io/en/blogs/2018/Gym-and-Baselines-on-Windows.html) and [link](https://knowledge.udacity.com/questions/131475), see them for further information.
 
 
-## Rewars
+## Rewards
 
 It was not straightforward implementation. The algorithm is based on Pytorch, and therefore, it is different from the providecd by the original implementation [MADDPG](https://github.com/openai/maddpg). Nonetheless, finally I could obtain a quite satisfactory result, which is shown below.
 
 ![alt-link](https://github.com/imasmitja/MADDPG-AUV/blob/main/rewards.JPG)
+
+## Hyperparameters
+- BUFFER_SIZE =   int(1e6) # Replay buffer size
+- BATCH_SIZE  =   512      # Mini batch size
+- GAMMA       =   0.95     # Discount factor
+- TAU         =   0.01     # For soft update of target parameters 
+- LR_ACTOR    =   1e-2     # Learning rate of the actor
+- LR_CRITIC   =   1e-2     # Learning rate of the critic
+- WEIGHT_DECAY =  1e-5     # L2 weight decay
+- UPDATE_EVERY =  30       # How many steps to take before updating target networks
+- UPDATE_TIMES =  20       # Number of times we update the networks
+- SEED = 3                 # Seed for random numbers
+- parallel_envs = 6        # Number of parallel agents
+- num_agents = 3           # Number of agents per environment
+- number_of_episodes = 60000
+- episode_length = 25
+- noise = 0.1              # Amplitude of OU noise
+- noise_reduction = 0.999  # Reduction of OU noise per episode
+
+Actor and Critic neural network layers configuration
+- in_actor = 18
+- hidden_in_actor = 128
+- hidden_out_actor = 128
+- out_actor = 2
+- in_critic = 60
+- hidden_in_critic = 128
+- hidden_out_critic = 128
+
 
 
