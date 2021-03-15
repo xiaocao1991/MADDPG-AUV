@@ -1,5 +1,5 @@
 # MADDPG-AUV
-This is a MADDPG algorithm to be used on particle environment styles. I use it to test my own scenarios for underwater target localization using autonomous vehicles. 
+This is an MADDPG algorithm to be used on particle environment styles. I use it to test my own scenarios for underwater target localization using autonomous vehicles. 
 
 ## Simple spread env
 This algorithms has been used to solve the simple spread (Cooperative navigation) environment from OpenAI [link](https://github.com/openai/multiagent-particle-envs). N agents, N landmarks. Agents are rewarded based on how far any agent is from each landmark. Agents are penalized if they collide with other agents. So, agents have to learn to cover all the landmarks while avoiding collisions. However, I modified part of the reward function to be able to increase the training performance (i.e. the agents are receive +10 if are near a landmark).
