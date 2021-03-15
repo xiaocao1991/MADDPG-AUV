@@ -47,7 +47,9 @@ Train the NN network:
 Run in CMD -> python main.py
 
 Then, when the NN is trained you can visualize the polots on tensorBoard by:
+
 Run in CMD -> tensorboard --logdir=./log/ --host=127.0.0.1
+
 Run in web -> http://localhost:6006/
 
 Clean:
