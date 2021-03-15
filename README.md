@@ -67,4 +67,6 @@ Part of this has been obtained from [link](https://arztsamuel.github.io/en/blogs
 
 It was not straightforward implementation. The algorithm is based on Pytorch, and therefore, it is different from the providecd by the original implementation [MADDPG](https://github.com/openai/maddpg). Nonetheless, finally I could obtain a quite satisfactory result, which is shown below.
 
+![alt-link](https://github.com/imasmitja/MADDPG-AUV/blob/main/rewards.JPG)
+
 
