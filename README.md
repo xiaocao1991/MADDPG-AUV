@@ -26,7 +26,7 @@ I have followed the next steps to set up my Windows computer to run the algorith
 Test (optional):
  - python examples/agents/random_agent.py
 
-Next:
+Next (optional as I implemented my own MADDPG):
 - git clone https://github.com/openai/baselines.git
 
   cd baselines
