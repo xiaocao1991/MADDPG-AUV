@@ -2,7 +2,7 @@
 # perform training loop
 
 import envs
-from buffer import ReplayBuffer
+from buffer import ReplayBuffer, ReplayBuffer_SummTree
 from maddpg import MADDPG
 import torch
 import numpy as np
@@ -18,13 +18,14 @@ BUFFER_SIZE =   int(1e6) # Replay buffer size
 BATCH_SIZE  =   512      # Mini batch size
 GAMMA       =   0.95     # Discount factor
 TAU         =   0.01     # For soft update of target parameters 
-LR_ACTOR    =   1e-2     # Learning rate of the actor
-LR_CRITIC   =   1e-2     # Learning rate of the critic
-WEIGHT_DECAY =  1e-5     # L2 weight decay
+LR_ACTOR    =   1e-3     # Learning rate of the actor
+LR_CRITIC   =   1e-4     # Learning rate of the critic
+WEIGHT_DECAY =  0#1e-5     # L2 weight decay
 UPDATE_EVERY =  30       # How many steps to take before updating target networks
 UPDATE_TIMES =  20       # Number of times we update the networks
 SEED = 3                 # Seed for random numbers
-BENCHMARK   =   True
+BENCHMARK   =   False
+EXP_REP_BUF =   False     # Experienced replay buffer activation
 
 def seeding(seed=1):
     np.random.seed(seed)
@@ -47,34 +48,42 @@ def main():
     # number of parallel agents
     parallel_envs = 6
     # number of agents per environment
-    num_agents = 3
+    num_agents = 6
     # number of training episodes.
     # change this to higher number to experiment. say 30000.
-    number_of_episodes = 60000
-    episode_length = 25
+    number_of_episodes = 300000
+    episode_length = 35
     # how many episodes to save policy and gif
     save_interval = 1000
     t = 0
     
     # amplitude of OU noise
     # this slowly decreases to 0
-    noise = 0.1 #was 2, try 0.5
+    noise = 0.01 #was 2, try 0.5
     noise_reduction = 0.999
 
     # how many episodes before update
     # episode_per_update = UPDATE_EVERY * parallel_envs
-    common_folder = time.strftime("/%m%d%y_%H%M%S")
-    log_path = os.getcwd()+common_folder+"/log"
-    model_dir= os.getcwd()+common_folder+"/model_dir"
+    common_folder = time.strftime(r"\%m%d%y_%H%M%S")
+    log_path = os.getcwd()+common_folder+r"\log"
+    model_dir= os.getcwd()+common_folder+r"\model_dir"
     
     os.makedirs(model_dir, exist_ok=True)
     
+    if BENCHMARK:
+        benchmark_dir = os.getcwd()+common_folder+r"\benchmark_dir"
+        os.makedirs(benchmark_dir, exist_ok=True) 
+    
     # initialize environment
     torch.set_num_threads(parallel_envs)
-    env = envs.make_parallel_env(parallel_envs, seed = 1, benchmark = BENCHMARK)
+    env = envs.make_parallel_env(parallel_envs, seed = SEED, num_agents=num_agents, benchmark = BENCHMARK)
        
     # initialize replay buffer
-    buffer = ReplayBuffer(int(BUFFER_SIZE))
+    if EXP_REP_BUF == False:
+        buffer = ReplayBuffer(int(BUFFER_SIZE))
+    else:
+        buffer = ReplayBuffer_SummTree(int(BUFFER_SIZE), SEED) #Experienced replay buffer
+        priority = np.ones(num_agents) #initial experienced replay buffer priority
     
     # initialize policy and critic
     maddpg = MADDPG(num_agents = num_agents, discount_factor=GAMMA, tau=TAU, lr_actor=LR_ACTOR, lr_critic=LR_CRITIC, weight_decay=WEIGHT_DECAY)
@@ -86,8 +95,11 @@ def main():
     # agent0_reward = []
     # agent1_reward = []
     # agent2_reward = []
-
-    agent_info = [[[]]]  # placeholder for benchmarking info
+    
+    if BENCHMARK:
+        agent_info = []
+        for i in range(num_agents):
+            agent_info.append((0,0,0,0))  # placeholder for benchmarking info
     
     # training loop
     # show progressbar
@@ -96,15 +108,32 @@ def main():
               pb.Percentage(), ' ', pb.ETA(), ' ', pb.Bar(marker=pb.RotatingMarker()), ' ' ]
     timer = pb.ProgressBar(widgets=widget, maxval=number_of_episodes).start()
     
+    
+    # trained_checkpoint = r'E:\Ivan\UPC\UDACITY\DRL_Nanodegree\Part4\MADDPG\032621_224252\model_dir\episode-99000.pt' #test1 6 agents
+    # trained_checkpoint = r'E:\Ivan\UPC\UDACITY\DRL_Nanodegree\Part4\MADDPG\032821_102717\model_dir\episode-99000.pt' #test2 6 agents + pretrined from previous
+    # trained_checkpoint = r'E:\Ivan\UPC\UDACITY\DRL_Nanodegree\Part4\MADDPG\032921_160324\model_dir\episode-99000.pt' #test3 6 agents pre-pretrined
+    # trained_checkpoint = r'E:\Ivan\UPC\UDACITY\DRL_Nanodegree\Part4\MADDPG\033021_203450\model_dir\episode-98004.pt' #test3 6 agents pre-pre-pretrined
+    trained_checkpoint = r'E:\Ivan\UPC\UDACITY\DRL_Nanodegree\Part4\MADDPG\040921_222255\model_dir\episode-299994.pt' #Test with slighly reward function modified 300.000 iteration
+
+    aux = torch.load(trained_checkpoint)
+    for i in range(num_agents):  
+        # load the weights from file
+        maddpg.maddpg_agent[i].actor.load_state_dict(aux[i]['actor_params'])
+        maddpg.maddpg_agent[i].critic.load_state_dict(aux[i]['critic_params'])
+    
     print('Starting iterations...')
     for episode in range(0, number_of_episodes, parallel_envs):
 
         timer.update(episode)
 
-        reward_this_episode = np.zeros((parallel_envs, num_agents))
+        #Reset the environment
+        all_obs = env.reset() 
+        #Reset the noise
+        for i in range(num_agents):
+            maddpg.maddpg_agent[i].noise.reset()
+        #Reset the rewards
+        reward_this_episode = np.zeros((parallel_envs, num_agents))  
         
-        all_obs = env.reset() #
-                
         # flip the first two indices
         obs_roll = np.rollaxis(all_obs,1)
         obs = transpose_list(obs_roll)
@@ -123,7 +152,7 @@ def main():
             # explore = only explore for a certain number of episodes
             # action input needs to be transposed
             actions = maddpg.act(transpose_to_tensor(obs), noise=noise)
-            noise *= noise_reduction
+            
     
             actions_array = torch.stack(actions).detach().numpy()
 
@@ -142,8 +171,10 @@ def main():
             # add data to buffer
             # transition = (obs, obs_full, actions_for_env, rewards, next_obs, next_obs_full, dones)
             transition = (obs, actions_for_env, rewards, next_obs, dones)
-            buffer.push(transition)
-            
+            if EXP_REP_BUF == False:
+                buffer.push(transition)
+            else:
+                buffer.push(transition,priority)                
             reward_this_episode += rewards
 
             # obs, obs_full = next_obs, next_obs_full
@@ -159,17 +190,33 @@ def main():
                 
             # for benchmarking learned policies
             if BENCHMARK:
-                for i, inf in enumerate(info):
-                    agent_info[-1][i].append(inf['n'])
-
+                for e, inf in enumerate(info):
+                    for a in range(num_agents):
+                        agent_info[a] = np.add(agent_info[a],(inf['n'][a]))
+            
+            # finish the episode if done
+            if dones.any():
+                break
+            
+        #Reduce the quantity of noise added to the action
+        noise *= noise_reduction
+                
         # update once after every episode_per_update 
         # if len(buffer) > BATCH_SIZE and episode % episode_per_update < parallel_envs:
         if len(buffer) > BATCH_SIZE and episode % UPDATE_EVERY < parallel_envs:
             for _ in range(UPDATE_TIMES):
+                priority = np.zeros(num_agents)
                 for a_i in range(num_agents):
-                    samples = buffer.sample(BATCH_SIZE)
-                    maddpg.update(samples, a_i, logger)
-                maddpg.update_targets() #soft update the target network towards the actual networks
+                    if EXP_REP_BUF == False:
+                        samples = buffer.sample(BATCH_SIZE)
+                        priority = maddpg.update(samples, a_i, logger)
+                    else:
+                        samples, indexes = buffer.sample(BATCH_SIZE)
+                        new_priorities = maddpg.update(samples, a_i, logger)
+                        priority[a_i] = buffer.update(indexes, new_priorities)
+                if EXP_REP_BUF == True:
+                    priority /= num_agents
+            maddpg.update_targets() #soft update the target network towards the actual networks
 
                 
         for i in range(parallel_envs):
@@ -193,8 +240,8 @@ def main():
         #saving model
         save_dict_list =[]
         if save_info:
-            print ('agent_info benchmark=',agent_info)
-            for i in range(3):
+            
+            for i in range(num_agents):
 
                 save_dict = {'actor_params' : maddpg.maddpg_agent[i].actor.state_dict(),
                              'actor_optim_params': maddpg.maddpg_agent[i].actor_optimizer.state_dict(),
@@ -208,6 +255,12 @@ def main():
             # save gif files
             imageio.mimsave(os.path.join(model_dir, 'episode-{}.gif'.format(episode)), 
                             frames, duration=.04)
+            
+            #save benchmark
+            if BENCHMARK:
+                file1 = open(benchmark_dir+r"\episode-{}.txt".format(episode),"w")#append mode 
+                file1.write(str(np.array(agent_info)/t)) 
+                file1.close() 
 
     env.close()
     logger.close()
@@ -215,3 +268,6 @@ def main():
 
 if __name__=='__main__':
     main()
+    
+    
+

@@ -18,6 +18,7 @@ class Network(nn.Module):
 
         self.fc1 = nn.Linear(input_dim,hidden_in_dim)
         self.fc2 = nn.Linear(hidden_in_dim,hidden_out_dim)
+        # self.fc23 = nn.Linear(hidden_out_dim,hidden_out_dim)
         self.fc3 = nn.Linear(hidden_out_dim,output_dim)
         self.nonlin = f.relu #leaky_relu
         self.actor = actor
@@ -26,6 +27,7 @@ class Network(nn.Module):
     def reset_parameters(self):
         self.fc1.weight.data.uniform_(*hidden_init(self.fc1))
         self.fc2.weight.data.uniform_(*hidden_init(self.fc2))
+        # self.fc23.weight.data.uniform_(*hidden_init(self.fc23))
         self.fc3.weight.data.uniform_(-1e-3, 1e-3)
 
     def forward(self, x):
@@ -33,6 +35,7 @@ class Network(nn.Module):
             # return a vector of the force
             h1 = self.nonlin(self.fc1(x))
             h2 = self.nonlin(self.fc2(h1))
+            # h23 = self.nonlin(self.fc23(h2))
             h3 = (self.fc3(h2))
             norm = torch.norm(h3)
             
@@ -45,5 +48,6 @@ class Network(nn.Module):
             # critic network simply outputs a number
             h1 = self.nonlin(self.fc1(x))
             h2 = self.nonlin(self.fc2(h1))
+            # h23 = self.nonlin(self.fc23(h2))
             h3 = (self.fc3(h2))
             return h3

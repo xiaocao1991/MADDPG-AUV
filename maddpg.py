@@ -5,6 +5,7 @@
 from ddpg import DDPGAgent
 import torch
 from utilities import soft_update, transpose_to_tensor, transpose_list, gumbel_softmax
+import numpy as np
 # device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 device = 'cpu'
 
@@ -23,13 +24,23 @@ class MADDPG:
         # self.maddpg_agent = [DDPGAgent(18, 64, 32, 2, 24, 64, 32, lr_actor=lr_actor, lr_critic=lr_critic, weight_decay=weight_decay), 
         #                      DDPGAgent(18, 64, 32, 2, 24, 64, 32, lr_actor=lr_actor, lr_critic=lr_critic, weight_decay=weight_decay), 
         #                      DDPGAgent(18, 64, 32, 2, 24, 64, 32, lr_actor=lr_actor, lr_critic=lr_critic, weight_decay=weight_decay)]
-        
-        self.maddpg_agent = [DDPGAgent(18, 128, 128, 2, 60, 128, 128, lr_actor=lr_actor, lr_critic=lr_critic, weight_decay=weight_decay, device=device) for _ in range(num_agents)]
+        #layers configuration
+        in_actor = num_agents*2 + (num_agents-1)*2 + 2+2 #x-y of landmarks + x-y and x-ycoms of others + x-y and x-yvelocity of current agent
+        hidden_in_actor = 400
+        hidden_out_actor = 200
+        out_actor = 2 #each agent have 2 continuous actions on x-y plane
+        in_critic = in_actor * num_agents + out_actor * num_agents # the critic input is all agents concatenated
+        hidden_in_critic = 700
+        hidden_out_critic = 350
+        self.maddpg_agent = [DDPGAgent(in_actor, hidden_in_actor, hidden_out_actor, out_actor, in_critic, hidden_in_critic, hidden_out_critic, lr_actor=lr_actor, lr_critic=lr_critic, weight_decay=weight_decay, device=device) for _ in range(num_agents)]
         # self.maddpg_agent = [DDPGAgent(14, 128, 128, 2, 48, 128, 128, lr_actor=lr_actor, lr_critic=lr_critic, weight_decay=weight_decay, device=device) for _ in range(num_agents)]
         
         self.discount_factor = discount_factor
         self.tau = tau
         self.iter = 0
+        
+        #initial priority for the experienced replay buffer
+        self.priority = 1.
 
     def get_actors(self):
         """get actors of all the agents in the MADDPG object"""
@@ -102,6 +113,11 @@ class MADDPG:
         critic_input = torch.cat((obs_full, action), dim=1).to(device)
         q = agent.critic(critic_input)
         
+         # Priorized Experience Replay
+        # aux = abs(q - y.detach()) + 0.1 #we introduce a fixed small constant number to avoid priorities = 0.
+        # aux = np.matrix(aux.detach().numpy())
+        # new_priorities = np.sqrt(np.diag(aux*aux.T))
+        
         # import pdb; pdb.set_trace()
         # Compute critic loss
         # huber_loss = torch.nn.SmoothL1Loss()
@@ -151,6 +167,7 @@ class MADDPG:
                            {'critic loss': cl,
                             'actor_loss': al},
                            self.iter)
+        # return (new_priorities)
 
     def update_targets(self):
         """soft update targets"""
