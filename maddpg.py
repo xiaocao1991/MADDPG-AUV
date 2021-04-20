@@ -26,12 +26,12 @@ class MADDPG:
         #                      DDPGAgent(18, 64, 32, 2, 24, 64, 32, lr_actor=lr_actor, lr_critic=lr_critic, weight_decay=weight_decay)]
         #layers configuration
         in_actor = num_agents*2 + (num_agents-1)*2 + 2+2 #x-y of landmarks + x-y and x-ycoms of others + x-y and x-yvelocity of current agent
-        hidden_in_actor = num_agents*70
-        hidden_out_actor = hidden_in_actor/2
+        hidden_in_actor = in_actor*15
+        hidden_out_actor = int(hidden_in_actor/2)
         out_actor = 2 #each agent have 2 continuous actions on x-y plane
         in_critic = in_actor * num_agents + out_actor * num_agents # the critic input is all agents concatenated
         hidden_in_critic = in_critic * 4
-        hidden_out_critic = hidden_in_critic/2
+        hidden_out_critic = int(hidden_in_critic/2)
         self.maddpg_agent = [DDPGAgent(in_actor, hidden_in_actor, hidden_out_actor, out_actor, in_critic, hidden_in_critic, hidden_out_critic, lr_actor=lr_actor, lr_critic=lr_critic, weight_decay=weight_decay, device=device) for _ in range(num_agents)]
         # self.maddpg_agent = [DDPGAgent(14, 128, 128, 2, 48, 128, 128, lr_actor=lr_actor, lr_critic=lr_critic, weight_decay=weight_decay, device=device) for _ in range(num_agents)]
         

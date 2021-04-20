@@ -3,11 +3,11 @@ import numpy as np
 import multiagent.scenarios as scenarios
 from multiagent.environment import MultiAgentEnv
 
-def make_parallel_env(n_rollout_threads, seed=1, num_agents=3, benchmark = False):
+def make_parallel_env(n_rollout_threads, scenario, seed=1, num_agents=3, benchmark = False):
     def get_env_fn(rank):
         def init_env():
             # env = make_env("simple_adversary")
-            env = make_env("simple_spread_ivan", num_agents=num_agents, benchmark = benchmark)
+            env = make_env(scenario, num_agents=num_agents, benchmark = benchmark)
             env.seed(seed + rank * 1000)
             np.random.seed(seed + rank * 1000)
             return env

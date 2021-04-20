@@ -26,6 +26,8 @@ UPDATE_TIMES =  20       # Number of times we update the networks
 SEED = 3                 # Seed for random numbers
 BENCHMARK   =   False
 EXP_REP_BUF =   False     # Experienced replay buffer activation
+PRE_TRAINED =   False    # Use a previouse trained network as imput weights
+SCENARIO    =   "simple_spread_ivan" #Scenario used to train the networks
 
 
 def seeding(seed=1):
@@ -47,9 +49,9 @@ def pre_process(entity, batchsize):
 def main():
     seeding(seed = SEED)
     # number of parallel agents
-    parallel_envs = 6
+    parallel_envs = 4
     # number of agents per environment
-    num_agents = 6
+    num_agents = 2
     # number of training episodes.
     # change this to higher number to experiment. say 30000.
     number_of_episodes = 300000
@@ -77,7 +79,7 @@ def main():
     
     # initialize environment
     torch.set_num_threads(parallel_envs)
-    env = envs.make_parallel_env(parallel_envs, seed = SEED, num_agents=num_agents, benchmark = BENCHMARK)
+    env = envs.make_parallel_env(parallel_envs, SCENARIO, seed = SEED, num_agents=num_agents, benchmark = BENCHMARK)
        
     # initialize replay buffer
     if EXP_REP_BUF == False:
@@ -110,17 +112,18 @@ def main():
     timer = pb.ProgressBar(widgets=widget, maxval=number_of_episodes).start()
     
     
-    # trained_checkpoint = r'E:\Ivan\UPC\UDACITY\DRL_Nanodegree\Part4\MADDPG\032621_224252\model_dir\episode-99000.pt' #test1 6 agents
-    # trained_checkpoint = r'E:\Ivan\UPC\UDACITY\DRL_Nanodegree\Part4\MADDPG\032821_102717\model_dir\episode-99000.pt' #test2 6 agents + pretrined from previous
-    # trained_checkpoint = r'E:\Ivan\UPC\UDACITY\DRL_Nanodegree\Part4\MADDPG\032921_160324\model_dir\episode-99000.pt' #test3 6 agents pre-pretrined
-    # trained_checkpoint = r'E:\Ivan\UPC\UDACITY\DRL_Nanodegree\Part4\MADDPG\033021_203450\model_dir\episode-98004.pt' #test3 6 agents pre-pre-pretrined
-    trained_checkpoint = r'E:\Ivan\UPC\UDACITY\DRL_Nanodegree\Part4\MADDPG\040921_222255\model_dir\episode-299994.pt' #Test with slighly reward function modified 300.000 iteration
-
-    aux = torch.load(trained_checkpoint)
-    for i in range(num_agents):  
-        # load the weights from file
-        maddpg.maddpg_agent[i].actor.load_state_dict(aux[i]['actor_params'])
-        maddpg.maddpg_agent[i].critic.load_state_dict(aux[i]['critic_params'])
+    if PRE_TRAINED == True:
+        # trained_checkpoint = r'E:\Ivan\UPC\UDACITY\DRL_Nanodegree\Part4\MADDPG\032621_224252\model_dir\episode-99000.pt' #test1 6 agents
+        # trained_checkpoint = r'E:\Ivan\UPC\UDACITY\DRL_Nanodegree\Part4\MADDPG\032821_102717\model_dir\episode-99000.pt' #test2 6 agents + pretrined from previous
+        # trained_checkpoint = r'E:\Ivan\UPC\UDACITY\DRL_Nanodegree\Part4\MADDPG\032921_160324\model_dir\episode-99000.pt' #test3 6 agents pre-pretrined
+        # trained_checkpoint = r'E:\Ivan\UPC\UDACITY\DRL_Nanodegree\Part4\MADDPG\033021_203450\model_dir\episode-98004.pt' #test3 6 agents pre-pre-pretrined
+        trained_checkpoint = r'E:\Ivan\UPC\UDACITY\DRL_Nanodegree\Part4\MADDPG\040921_222255\model_dir\episode-299994.pt' #Test with slighly reward function modified 300.000 iteration
+    
+        aux = torch.load(trained_checkpoint)
+        for i in range(num_agents):  
+            # load the weights from file
+            maddpg.maddpg_agent[i].actor.load_state_dict(aux[i]['actor_params'])
+            maddpg.maddpg_agent[i].critic.load_state_dict(aux[i]['critic_params'])
     
     print('Starting iterations...')
     for episode in range(0, number_of_episodes, parallel_envs):
