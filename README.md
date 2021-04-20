@@ -6,7 +6,7 @@ New update: six agents
 ## Simple spread env
 This algorithm has been used to solve the simple spread (Cooperative navigation) environment from OpenAI [link](https://github.com/openai/multiagent-particle-envs). N agents, N landmarks. Agents are rewarded based on how far any agent is from each landmark. Agents are penalized if they collide with other agents. So, agents have to learn to cover all the landmarks while avoiding collisions. However, I modified part of the reward function to be able to increase the training performance (i.e. the agents receive +10 if they are near a landmark).
 
-<img src="https://github.com/imasmitja/MADDPG-AUV/blob/main/model/episode-49002.gif" width="300" height="500"/>
+<img src="https://github.com/imasmitja/MADDPG-AUV/blob/six_agents/041321_204450/model_dir/episode-196002.gif" width="300" height="500"/>
 
 The observation space consists of 18 variables (for 3 agents and 3 landmarks): X-Y positions of each landmark, X-Y positions other agents, and X-Y position and X-Y velocities of itself, plus 2 communication of all other agents. Each agent receives its own, local observation. Two continuous cations are available, corresponding to movements of X and Y. The reward of each agent is shared in order to have a cooperative behaviour.
 
