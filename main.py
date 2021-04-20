@@ -27,6 +27,7 @@ SEED = 3                 # Seed for random numbers
 BENCHMARK   =   False
 EXP_REP_BUF =   False     # Experienced replay buffer activation
 
+
 def seeding(seed=1):
     np.random.seed(seed)
     torch.manual_seed(seed)
