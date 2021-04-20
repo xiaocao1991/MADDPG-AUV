@@ -54,7 +54,7 @@ def main():
     num_agents = 2
     # number of training episodes.
     # change this to higher number to experiment. say 30000.
-    number_of_episodes = 300000
+    number_of_episodes = 30000
     episode_length = 35
     # how many episodes to save policy and gif
     save_interval = 1000
