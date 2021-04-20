@@ -29,10 +29,12 @@ LR_CRITIC   =   1e-3     # Learning rate of the critic
 WEIGHT_DECAY =  0 #1e-5     # L2 weight decay
 UPDATE_EVERY =  30       # How many steps to take before updating target networks
 UPDATE_TIMES =  20       # Number of times we update the networks
-SEED = 33434                 # Seed for random numbers
+SEED = 34                 # Seed for random numbers
 BENCHMARK   =   False
 EXP_REP_BUF =   False     # Experienced replay buffer activation
 PRE_TRAINED =   False    # Use a previouse trained network as imput weights
+#Scenario used to train the networks
+SCENARIO    =   "simple_track_ivan" 
 
 def seeding(seed=1):
     np.random.seed(seed)
@@ -43,11 +45,11 @@ def main():
     # number of parallel agents
     parallel_envs = 1
     # number of agents per environment
-    num_agents = 6
+    num_agents = 2
     
     # initialize environment
     torch.set_num_threads(parallel_envs)
-    env = envs.make_parallel_env(parallel_envs, seed = SEED, num_agents=num_agents, benchmark = BENCHMARK)
+    env = envs.make_parallel_env(parallel_envs, SCENARIO, seed = SEED, num_agents=num_agents, benchmark = BENCHMARK)
        
     # initialize policy and critic
     maddpg = MADDPG(num_agents = num_agents, discount_factor=GAMMA, tau=TAU, lr_actor=LR_ACTOR, lr_critic=LR_CRITIC, weight_decay=WEIGHT_DECAY)
