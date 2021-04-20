@@ -22,13 +22,14 @@ LR_ACTOR    =   1e-3     # Learning rate of the actor
 LR_CRITIC   =   1e-4     # Learning rate of the critic
 WEIGHT_DECAY =  0#1e-5     # L2 weight decay
 UPDATE_EVERY =  30       # How many steps to take before updating target networks
-UPDATE_TIMES =  20       # Number of times we update the networks
+UPDATE_TIMES =  5       # Number of times we update the networks
 SEED = 3                 # Seed for random numbers
 BENCHMARK   =   False
 EXP_REP_BUF =   False     # Experienced replay buffer activation
 PRE_TRAINED =   False    # Use a previouse trained network as imput weights
-SCENARIO    =   "simple_spread_ivan" #Scenario used to train the networks
-
+#Scenario used to train the networks
+SCENARIO    =   "simple_spread_ivan" 
+SCENARIO    =   "simple_track_ivan" 
 
 def seeding(seed=1):
     np.random.seed(seed)
@@ -52,9 +53,11 @@ def main():
     parallel_envs = 4
     # number of agents per environment
     num_agents = 2
+    # number of landmarks (or targets) per environment
+    num_landmarks = 1
     # number of training episodes.
     # change this to higher number to experiment. say 30000.
-    number_of_episodes = 30000
+    number_of_episodes = 100000
     episode_length = 35
     # how many episodes to save policy and gif
     save_interval = 1000
@@ -89,7 +92,7 @@ def main():
         priority = np.ones(num_agents) #initial experienced replay buffer priority
     
     # initialize policy and critic
-    maddpg = MADDPG(num_agents = num_agents, discount_factor=GAMMA, tau=TAU, lr_actor=LR_ACTOR, lr_critic=LR_CRITIC, weight_decay=WEIGHT_DECAY)
+    maddpg = MADDPG(num_agents = num_agents, num_landmarks = num_landmarks, discount_factor=GAMMA, tau=TAU, lr_actor=LR_ACTOR, lr_critic=LR_CRITIC, weight_decay=WEIGHT_DECAY)
     logger = SummaryWriter(log_dir=log_path)
     
     agents_reward = []

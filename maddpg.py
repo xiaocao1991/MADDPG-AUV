@@ -12,7 +12,7 @@ device = 'cpu'
 
 
 class MADDPG:
-    def __init__(self, num_agents = 3, discount_factor=0.95, tau=0.02, lr_actor=1.0e-2, lr_critic=1.0e-2, weight_decay=1.0e-5):
+    def __init__(self, num_agents = 3, num_landmarks = 1, discount_factor=0.95, tau=0.02, lr_actor=1.0e-2, lr_critic=1.0e-2, weight_decay=1.0e-5):
         super(MADDPG, self).__init__()
 
         # critic input = obs_full + actions = 14+2+2+2=20
@@ -25,7 +25,7 @@ class MADDPG:
         #                      DDPGAgent(18, 64, 32, 2, 24, 64, 32, lr_actor=lr_actor, lr_critic=lr_critic, weight_decay=weight_decay), 
         #                      DDPGAgent(18, 64, 32, 2, 24, 64, 32, lr_actor=lr_actor, lr_critic=lr_critic, weight_decay=weight_decay)]
         #layers configuration
-        in_actor = num_agents*2 + (num_agents-1)*2 + 2+2 #x-y of landmarks + x-y and x-ycoms of others + x-y and x-yvelocity of current agent
+        in_actor = num_landmarks*2 + (num_agents-1)*2 + 2+2 #x-y of landmarks + x-y and x-ycoms of others + x-y and x-yvelocity of current agent
         hidden_in_actor = in_actor*15
         hidden_out_actor = int(hidden_in_actor/2)
         out_actor = 2 #each agent have 2 continuous actions on x-y plane

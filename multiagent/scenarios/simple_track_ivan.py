@@ -11,7 +11,7 @@ class Scenario(BaseScenario):
         # set any world properties first
         world.dim_c = 2
         world.num_agents = num_agents
-        num_landmarks = num_agents
+        num_landmarks = 1
         world.collaborative = True
         # add agents
         world.agents = [Agent() for i in range(num_agents)]
@@ -24,7 +24,7 @@ class Scenario(BaseScenario):
         world.landmarks = [Landmark() for i in range(num_landmarks)]
         for i, landmark in enumerate(world.landmarks):
             landmark.name = 'landmark %d' % i
-            landmark.collide = False
+            landmark.collide = True
             landmark.movable = False
         # make initial conditions
         self.reset_world(world)
@@ -63,6 +63,12 @@ class Scenario(BaseScenario):
                 if self.is_collision(a, agent):
                     rew -= 1
                     collisions += 1
+        if world.landmark.collide:
+            for l in world.landmarks:
+                if self.is_collision(l, agent):
+                    rew -= 1
+                    collisions +=1
+            
         return (rew, collisions, min_dists, occupied_landmarks)
 
 
@@ -92,28 +98,32 @@ class Scenario(BaseScenario):
     def reward(self, agent, world):
         # Agents are rewarded based on minimum agent distance to each landmark, penalized for collisions
         rew = 0.
+        min_radius = 0.1 #this parameter is used to limit how close an agent can go to a landmark
         for l in world.landmarks:
             dists = [np.sqrt(np.sum(np.square(a.state.p_pos - l.state.p_pos))) for a in world.agents]
             # rewf = 10*(1-np.exp(-4*np.array(dists)))
-            rewf = 1.*(np.array(dists)**1.)
-            rew -= min(rewf)
-            # if min(dists) < 0.08:
-            #     rew += 10
-            # if min(dists) > 2:
-            #     rew -= 100
+            rewf = 1.*(np.array(dists)**1.) - min_radius
+            if min(rewf) < 0:
+                rew -= 10
+            else:
+                rew -= min(rewf)
+                
         dists = [np.sqrt(np.sum(np.square(agent.state.p_pos - l.state.p_pos))) for l in world.landmarks]
-        rewf = -2.*(np.array(dists)**2.)
+        rewf = 1.*(np.array(dists)**1.) - min_radius
         if min(dists) > 2:
             rew -= 10.
-        elif min(dists) < 0.08:
-            rew += 10.
+        elif min(dists) < 0:
+            rew -= 10.
         else:
-            rew += max(rewf) + 2. 
+            rew += (2 - max(rewf)) 
         if agent.collide:
             for a in world.agents:
                 if a is agent: continue
                 if self.is_collision(a, agent):
                     rew -= 10.
+            for l in world.landmarks:
+                if self.is_collision(l, agent):
+                    rew -= 10
         return rew
 
     def observation(self, agent, world):
