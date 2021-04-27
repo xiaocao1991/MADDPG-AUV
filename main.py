@@ -57,7 +57,7 @@ def main():
     num_landmarks = 6
     # number of training episodes.
     # change this to higher number to experiment. say 30000.
-    number_of_episodes = 300000
+    number_of_episodes = 200000
     episode_length = 35
     # how many episodes to save policy and gif
     save_interval = 1000
