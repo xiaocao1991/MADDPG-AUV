@@ -22,14 +22,14 @@ LR_ACTOR    =   1e-3     # Learning rate of the actor
 LR_CRITIC   =   1e-4     # Learning rate of the critic
 WEIGHT_DECAY =  0#1e-5     # L2 weight decay
 UPDATE_EVERY =  30       # How many steps to take before updating target networks
-UPDATE_TIMES =  5       # Number of times we update the networks
+UPDATE_TIMES =  20       # Number of times we update the networks
 SEED = 3                 # Seed for random numbers
 BENCHMARK   =   False
 EXP_REP_BUF =   False     # Experienced replay buffer activation
 PRE_TRAINED =   False    # Use a previouse trained network as imput weights
 #Scenario used to train the networks
 SCENARIO    =   "simple_spread_ivan" 
-SCENARIO    =   "simple_track_ivan" 
+# SCENARIO    =   "simple_track_ivan" 
 
 def seeding(seed=1):
     np.random.seed(seed)
@@ -50,11 +50,11 @@ def pre_process(entity, batchsize):
 def main():
     seeding(seed = SEED)
     # number of parallel agents
-    parallel_envs = 4
+    parallel_envs = 6
     # number of agents per environment
-    num_agents = 2
+    num_agents = 6
     # number of landmarks (or targets) per environment
-    num_landmarks = 1
+    num_landmarks = 6
     # number of training episodes.
     # change this to higher number to experiment. say 30000.
     number_of_episodes = 100000
@@ -65,7 +65,7 @@ def main():
     
     # amplitude of OU noise
     # this slowly decreases to 0
-    noise = 0.01 #was 2, try 0.5
+    noise = 0.05 #was 2, try 0.5
     noise_reduction = 0.999
 
     # how many episodes before update
