@@ -109,10 +109,15 @@ def main():
     
     # training loop
     # show progressbar
-    import progressbar as pb
-    widget = ['\repisode: ', pb.Counter(),'/',str(number_of_episodes),' ', 
-              pb.Percentage(), ' ', pb.ETA(), ' ', pb.Bar(marker=pb.RotatingMarker()), ' ' ]
-    timer = pb.ProgressBar(widgets=widget, maxval=number_of_episodes).start()
+    #import progressbar as pb
+    #widget = ['\repisode: ', pb.Counter(),'/',str(number_of_episodes),' ', 
+    #          pb.Percentage(), ' ', pb.ETA(), ' ', pb.Bar(marker=pb.RotatingMarker()), ' ' ]
+    #timer = pb.ProgressBar(widgets=widget, maxval=number_of_episodes).start()
+    
+    import tqdm
+    #initializing progress bar object
+    timer_bar = tqdm.tqdm(range(number_of_episodes),desc='Episode',position=0)
+    
     
     
     if PRE_TRAINED == True:
@@ -131,7 +136,8 @@ def main():
     print('Starting iterations...')
     for episode in range(0, number_of_episodes, parallel_envs):
 
-        timer.update(episode)
+        #timer.update(episode)
+        timer_bar.update()
 
         #Reset the environment
         all_obs = env.reset() 
@@ -271,7 +277,7 @@ def main():
 
     env.close()
     logger.close()
-    timer.finish()
+    #timer.finish()
 
 if __name__=='__main__':
     main()
