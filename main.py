@@ -83,6 +83,7 @@ def main():
         os.makedirs(benchmark_dir, exist_ok=True) 
     
     # initialize environment
+    print('Initialize the environments')
     torch.set_num_threads(parallel_envs)
     env = envs.make_parallel_env(parallel_envs, SCENARIO, seed = SEED, num_agents=num_agents, benchmark = BENCHMARK)
        
@@ -94,6 +95,7 @@ def main():
         priority = np.ones(num_agents) #initial experienced replay buffer priority
     
     # initialize policy and critic
+    print('Initialize the Actor-Critic networks')
     maddpg = MADDPG(num_agents = num_agents, num_landmarks = num_landmarks, discount_factor=GAMMA, tau=TAU, lr_actor=LR_ACTOR, lr_critic=LR_CRITIC, weight_decay=WEIGHT_DECAY)
     logger = SummaryWriter(log_dir=log_path)
     
