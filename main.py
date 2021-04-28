@@ -31,6 +31,7 @@ PRE_TRAINED =   False    # Use a previouse trained network as imput weights
 SCENARIO    =   "simple_spread_ivan" 
 # SCENARIO    =   "simple_track_ivan" 
 RENDER = False #in BSC machines the render doesn't work
+PROGRESS_BAR = False #if we want to render the progress bar
 
 def seeding(seed=1):
     np.random.seed(seed)
@@ -115,9 +116,10 @@ def main():
     #          pb.Percentage(), ' ', pb.ETA(), ' ', pb.Bar(marker=pb.RotatingMarker()), ' ' ]
     #timer = pb.ProgressBar(widgets=widget, maxval=number_of_episodes).start()
     
-    import tqdm
-    #initializing progress bar object
-    timer_bar = tqdm.tqdm(range(number_of_episodes),desc='\r\nEpisode',position=0)
+    if PROGRESS_BAR == True:
+        import tqdm
+        #initializing progress bar object
+        timer_bar = tqdm.tqdm(range(number_of_episodes),desc='\r\nEpisode',position=0)
     
     
     
@@ -137,8 +139,9 @@ def main():
     print('Starting iterations...')
     for episode in range(0, number_of_episodes, parallel_envs):
 
-        #timer.update(episode)
-        timer_bar.update()
+        if PROGRESS_BAR == True:
+            #timer.update(episode)
+            timer_bar.update()
 
         #Reset the environment
         all_obs = env.reset() 
