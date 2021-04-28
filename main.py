@@ -71,14 +71,14 @@ def main():
 
     # how many episodes before update
     # episode_per_update = UPDATE_EVERY * parallel_envs
-    common_folder = time.strftime(r"\%m%d%y_%H%M%S")
-    log_path = os.getcwd()+common_folder+r"\log"
-    model_dir= os.getcwd()+common_folder+r"\model_dir"
+    common_folder = time.strftime(r"/%m%d%y_%H%M%S")
+    log_path = os.getcwd()+common_folder+r"/log"
+    model_dir= os.getcwd()+common_folder+r"/model_dir"
     
     os.makedirs(model_dir, exist_ok=True)
     
     if BENCHMARK:
-        benchmark_dir = os.getcwd()+common_folder+r"\benchmark_dir"
+        benchmark_dir = os.getcwd()+common_folder+r"/benchmark_dir"
         os.makedirs(benchmark_dir, exist_ok=True) 
     
     # initialize environment
