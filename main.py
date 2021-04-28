@@ -52,7 +52,7 @@ def pre_process(entity, batchsize):
 def main():
     seeding(seed = SEED)
     # number of parallel agents
-    parallel_envs = 1
+    parallel_envs = 6
     # number of agents per environment
     num_agents = 6
     # number of landmarks (or targets) per environment
