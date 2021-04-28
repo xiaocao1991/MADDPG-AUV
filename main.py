@@ -30,6 +30,7 @@ PRE_TRAINED =   False    # Use a previouse trained network as imput weights
 #Scenario used to train the networks
 SCENARIO    =   "simple_spread_ivan" 
 # SCENARIO    =   "simple_track_ivan" 
+RENDER = False #in BSC machines the render doesn't work
 
 def seeding(seed=1):
     np.random.seed(seed)
@@ -156,7 +157,8 @@ def main():
         frames = []
         tmax = 0
         
-        if save_info:
+        
+        if save_info == True and RENDER == True:
             frames.append(env.render('rgb_array'))
 
         for episode_t in range(episode_length):
@@ -197,7 +199,7 @@ def main():
             t += parallel_envs
             
             # save gif frame
-            if save_info:
+            if save_info == True and RENDER == True:
                 frames.append(env.render('rgb_array'))
                 tmax+=1
                 
@@ -264,10 +266,11 @@ def main():
 
                 torch.save(save_dict_list, 
                            os.path.join(model_dir, 'episode-{}.pt'.format(episode)))
-                
-            # save gif files
-            imageio.mimsave(os.path.join(model_dir, 'episode-{}.gif'.format(episode)), 
-                            frames, duration=.04)
+            
+            if RENDER == True:
+                # save gif files
+                imageio.mimsave(os.path.join(model_dir, 'episode-{}.gif'.format(episode)), 
+                                frames, duration=.04)
             
             #save benchmark
             if BENCHMARK:
