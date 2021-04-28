@@ -6,7 +6,9 @@ from multiagent.environment import MultiAgentEnv
 def make_parallel_env(n_rollout_threads, scenario, seed=1, num_agents=3, benchmark = False):
     print('Make parallel env')
     def get_env_fn(rank):
+        print('Get env fn')
         def init_env():
+            print('Init env')
             # env = make_env("simple_adversary")
             env = make_env(scenario, num_agents=num_agents, benchmark = benchmark)
             env.seed(seed + rank * 1000)
