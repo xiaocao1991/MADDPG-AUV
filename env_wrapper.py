@@ -56,9 +56,10 @@ class SubprocVecEnv(VecEnv):
         print('env_wrapper: Process')
         self.ps = [Process(target=worker, args=(work_remote, remote, CloudpickleWrapper(env_fn)))
             for (work_remote, remote, env_fn) in zip(self.work_remotes, self.remotes, env_fns)]
-        print('env_wrapper: p.daemon, p.start')
         for p in self.ps:
+            print('env_wrapper: p.daemon')    
             p.daemon = True # if the main process crashes, we should not cause things to hang
+            print('env_wrapper: p.start')
             p.start()
         print('env_wrapper: remote.close')
         for remote in self.work_remotes:
