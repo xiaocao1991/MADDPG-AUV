@@ -288,6 +288,7 @@ def main():
     #timer.finish()
 
 if __name__=='__main__':
+    print('Start main')
     main()
     
     
