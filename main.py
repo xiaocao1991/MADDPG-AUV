@@ -117,7 +117,7 @@ def main():
     
     import tqdm
     #initializing progress bar object
-    timer_bar = tqdm.tqdm(range(number_of_episodes),desc='Episode',position=0)
+    timer_bar = tqdm.tqdm(range(number_of_episodes),desc='\r\nEpisode',position=0)
     
     
     
