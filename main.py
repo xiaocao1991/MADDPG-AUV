@@ -83,8 +83,9 @@ def main():
         os.makedirs(benchmark_dir, exist_ok=True) 
     
     # initialize environment
-    print('Initialize the environments')
+    print('Initialize the number of parallel envs in torch')
     torch.set_num_threads(parallel_envs)
+    print('Initialize the environments')
     env = envs.make_parallel_env(parallel_envs, SCENARIO, seed = SEED, num_agents=num_agents, benchmark = BENCHMARK)
        
     # initialize replay buffer
