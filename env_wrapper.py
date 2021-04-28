@@ -62,7 +62,7 @@ class SubprocVecEnv(VecEnv):
             p.daemon = True # if the main process crashes, we should not cause things to hang
             print('env_wrapper: p.start')
             p.start()
-            time.sleep(2.)
+            time.sleep(5.)
         print('env_wrapper: remote.close')
         for remote in self.work_remotes:
             remote.close()
