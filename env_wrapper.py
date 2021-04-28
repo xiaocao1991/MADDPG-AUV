@@ -5,7 +5,6 @@ import numpy as np
 from multiprocessing import Process, Pipe
 from baselines.common.vec_env import VecEnv, CloudpickleWrapper
 from baselines.common.tile_images import tile_images
-import time
 
 def worker(remote, parent_remote, env_fn_wrapper):
     parent_remote.close()
@@ -62,7 +61,6 @@ class SubprocVecEnv(VecEnv):
             p.daemon = True # if the main process crashes, we should not cause things to hang
             print('env_wrapper: p.start')
             p.start()
-            time.sleep(5.)
         print('env_wrapper: remote.close')
         for remote in self.work_remotes:
             remote.close()
