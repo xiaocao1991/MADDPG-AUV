@@ -31,7 +31,7 @@ PRE_TRAINED =   False    # Use a previouse trained network as imput weights
 SCENARIO    =   "simple_spread_ivan" 
 # SCENARIO    =   "simple_track_ivan" 
 RENDER = False #in BSC machines the render doesn't work
-PROGRESS_BAR = False #if we want to render the progress bar
+PROGRESS_BAR = True #if we want to render the progress bar
 
 def seeding(seed=1):
     np.random.seed(seed)

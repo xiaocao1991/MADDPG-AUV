@@ -4,11 +4,11 @@ import multiagent.scenarios as scenarios
 from multiagent.environment import MultiAgentEnv
 
 def make_parallel_env(n_rollout_threads, scenario, seed=1, num_agents=3, benchmark = False):
-    print('Make parallel env')
+    #print('Make parallel env')
     def get_env_fn(rank):
-        print('Get env fn')
+        #print('Get env fn')
         def init_env():
-            print('Init env')
+            #print('Init env')
             # env = make_env("simple_adversary")
             env = make_env(scenario, num_agents=num_agents, benchmark = benchmark)
             env.seed(seed + rank * 1000)
@@ -38,13 +38,13 @@ def make_env(scenario_name, num_agents=3, benchmark=False):
     '''
     
     # load scenario from script
-    print('load scenario')
+    #print('load scenario')
     scenario = scenarios.load(scenario_name + ".py").Scenario()
     # create world
-    print('Create world')
+    #print('Create world')
     world = scenario.make_world(num_agents)
     # create multiagent environment
-    print('Create multiagent environment')
+    #print('Create multiagent environment')
     if benchmark:
         env = MultiAgentEnv(world, scenario.reset_world, scenario.reward, scenario.observation,
                             scenario.benchmark_data)
