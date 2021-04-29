@@ -124,7 +124,7 @@ def main():
     if PROGRESS_BAR == True:
         import tqdm
         #initializing progress bar object
-        timer_bar = tqdm.tqdm(range(number_of_episodes),desc='\rEpisode',position=0)
+        timer_bar = tqdm.tqdm(range(number_of_episodes),desc='\r\nEpisode',position=0)
     
     
     
@@ -146,7 +146,7 @@ def main():
 
         if PROGRESS_BAR == True:
             #timer.update(episode)
-            timer_bar.update()
+            timer_bar.update(parallel_envs)
 
         #Reset the environment
         all_obs = env.reset() 
