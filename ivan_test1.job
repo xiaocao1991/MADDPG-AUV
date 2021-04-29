@@ -5,8 +5,7 @@
 #SBATCH --error=mpi_%j.err
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=160
-#SBATCH --gres=gpu:4
-#SBATCH --time=01:00:00
+#SBATCH --time=48:00:00
 #Example to send an email for Job notification
 #SBATCH --mail-type=all
 #SBATCH --mail-user=masmitja@icm.csic.es
