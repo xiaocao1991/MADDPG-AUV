@@ -32,6 +32,8 @@ SCENARIO    =   "simple_spread_ivan"
 # SCENARIO    =   "simple_track_ivan" 
 RENDER = False #in BSC machines the render doesn't work
 PROGRESS_BAR = True #if we want to render the progress bar
+DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu") #To run the pytorch tensors on cuda GPU
+# DEVICE = 'cpu'
 
 def seeding(seed=1):
     np.random.seed(seed)
@@ -97,7 +99,7 @@ def main():
     
     # initialize policy and critic
     print('Initialize the Actor-Critic networks')
-    maddpg = MADDPG(num_agents = num_agents, num_landmarks = num_landmarks, discount_factor=GAMMA, tau=TAU, lr_actor=LR_ACTOR, lr_critic=LR_CRITIC, weight_decay=WEIGHT_DECAY)
+    maddpg = MADDPG(num_agents = num_agents, num_landmarks = num_landmarks, discount_factor=GAMMA, tau=TAU, lr_actor=LR_ACTOR, lr_critic=LR_CRITIC, weight_decay=WEIGHT_DECAY, device = DEVICE)
     logger = SummaryWriter(log_dir=log_path)
     
     agents_reward = []
@@ -122,7 +124,7 @@ def main():
     if PROGRESS_BAR == True:
         import tqdm
         #initializing progress bar object
-        timer_bar = tqdm.tqdm(range(number_of_episodes),desc='\r\nEpisode',position=0)
+        timer_bar = tqdm.tqdm(range(number_of_episodes),desc='\rEpisode',position=0)
     
     
     
