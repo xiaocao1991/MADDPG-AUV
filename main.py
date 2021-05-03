@@ -11,6 +11,7 @@ import os
 from utilities import transpose_list, transpose_to_tensor
 import time
 
+
 # for saving gif
 import imageio
 
@@ -28,8 +29,8 @@ BENCHMARK   =   False
 EXP_REP_BUF =   False     # Experienced replay buffer activation
 PRE_TRAINED =   False    # Use a previouse trained network as imput weights
 #Scenario used to train the networks
-SCENARIO    =   "simple_spread_ivan" 
-# SCENARIO    =   "simple_track_ivan" 
+# SCENARIO    =   "simple_spread_ivan" 
+SCENARIO    =   "simple_track_ivan" 
 RENDER = False #in BSC machines the render doesn't work
 PROGRESS_BAR = True #if we want to render the progress bar
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu") #To run the pytorch tensors on cuda GPU
@@ -58,7 +59,7 @@ def main():
     # number of agents per environment
     num_agents = 6
     # number of landmarks (or targets) per environment
-    num_landmarks = 6
+    num_landmarks = 1
     # number of training episodes.
     # change this to higher number to experiment. say 30000.
     number_of_episodes = 400000

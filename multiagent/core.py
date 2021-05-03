@@ -84,6 +84,7 @@ class World(object):
         # list of agents and entities (can change at execution-time!)
         self.agents = []
         self.landmarks = []
+        self.landmarks_estimated = []
         # communication channel dimensionality
         self.dim_c = 0
         # position dimensionality
@@ -99,6 +100,7 @@ class World(object):
         self.contact_margin = 1e-3
         # if world is collaborative
         self.num_agents = 3
+        self.num_landmarks = 3
         self.collaborative = True
 
     # return all entities in the world
