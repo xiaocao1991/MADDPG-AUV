@@ -30,6 +30,18 @@ class MADDPG:
         in_critic = in_actor * num_agents + out_actor * num_agents # the critic input is all agents concatenated
         hidden_in_critic = in_critic * 4
         hidden_out_critic = int(hidden_in_critic/2)
+        
+        print('Actor NN configuration:')
+        print('Input nodes number:            ',in_actor)
+        print('Hidden 1st layer nodes number: ',hidden_in_actor)
+        print('Hidden 2nd layer nodes number: ',hidden_out_actor)
+        print('Output nodes number:           ',out_actor)
+        print('Critic NN configuration:')
+        print('Input nodes number:            ',in_critic)
+        print('Hidden 1st layer nodes number: ',hidden_in_critic)
+        print('Hidden 2nd layer nodes number: ',hidden_out_critic)
+        print('Output nodes number:           ',out_actor)
+        
         self.maddpg_agent = [DDPGAgent(in_actor, hidden_in_actor, hidden_out_actor, out_actor, in_critic, hidden_in_critic, hidden_out_critic, lr_actor=lr_actor, lr_critic=lr_critic, weight_decay=weight_decay, device=device) for _ in range(num_agents)]
         # self.maddpg_agent = [DDPGAgent(14, 128, 128, 2, 48, 128, 128, lr_actor=lr_actor, lr_critic=lr_critic, weight_decay=weight_decay, device=device) for _ in range(num_agents)]
         

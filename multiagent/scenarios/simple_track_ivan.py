@@ -112,7 +112,8 @@ class Scenario(BaseScenario):
         # get positions of all entities in this agent's reference frame
         entity_pos = []
         for i, entity in enumerate(world.landmarks):
-            if i < world.num_landmarks:  
+            if i < world.num_landmarks: 
+                print('new iteration ',i)
                 # world.entities
                 entity_pos.append(entity.state.p_pos - agent.state.p_pos)
                 
@@ -136,6 +137,7 @@ class Scenario(BaseScenario):
             comm.append(other.state.c)
             other_pos.append(other.state.p_pos - agent.state.p_pos)
         # return np.concatenate([agent.state.p_vel] + [agent.state.p_pos] + entity_pos + other_pos + comm)
+        import pdb; pdb.set_trace()
         return np.concatenate([agent.state.p_vel] + [agent.state.p_pos] + entity_pos + other_pos)
     
     def done(self, agent, world):
