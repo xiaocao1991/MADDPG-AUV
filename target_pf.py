@@ -301,7 +301,7 @@ class ParticleFilter(object):
                 ratio = 120 #15 works ok; ratio=10 is ok for statik targets
             else:
                 ratio = 50 #50 works ok; ratio=10 is ok for statik targets
-            radii = 10 #50 works ok
+            radii = 0.01 #50 works ok
             #From: https://classroom.udacity.com/courses/ud810/lessons/3353208568/concepts/33538586070923
             p3 = np.zeros([self.particle_number,self.dimx])
             ci = np.zeros(self.particle_number)
@@ -437,14 +437,14 @@ class Target(object):
         #the target might be. Each guess (or particle) is a vector containing [x,vx,y,vy]
         # create a set of particles
         # sense_noise is not used in area-only
-        self.pf = ParticleFilter(std_range=10.,init_velocity=.1,dimx=4,particle_number=10000,method=method,max_pf_range=max_pf_range)
-        self.pf.set_noise(forward_noise = 0.01, turn_noise = 0.1, sense_noise=5., velocity_noise = 0.01)
+        self.pf = ParticleFilter(std_range=.01,init_velocity=.001,dimx=4,particle_number=6000,method=method,max_pf_range=max_pf_range)
+        self.pf.set_noise(forward_noise = 0.0001, turn_noise = 0.001, sense_noise=.05, velocity_noise = 0.0001)
         self.position = [0.,0.,0.,0.]
 
     
     # Particle Filter                                
     def updatePF(self,dt,new_range,z,myobserver,update=True):
-        max_error = 10.
+        max_error = 1.
         if update == True:
                   
             # Initialize the particles if needed

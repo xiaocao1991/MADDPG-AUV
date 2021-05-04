@@ -3,14 +3,14 @@ import numpy as np
 import multiagent.scenarios as scenarios
 from multiagent.environment import MultiAgentEnv
 
-def make_parallel_env(n_rollout_threads, scenario, seed=1, num_agents=3, benchmark = False):
+def make_parallel_env(n_rollout_threads, scenario, seed=1, num_agents=3, num_landmarks=3, benchmark = False):
     #print('Make parallel env')
     def get_env_fn(rank):
         #print('Get env fn')
         def init_env():
             #print('Init env')
             # env = make_env("simple_adversary")
-            env = make_env(scenario, num_agents=num_agents, benchmark = benchmark)
+            env = make_env(scenario, num_agents=num_agents, num_landmarks=num_landmarks, benchmark = benchmark)
             env.seed(seed + rank * 1000)
             np.random.seed(seed + rank * 1000)
             return env
@@ -21,7 +21,7 @@ def make_parallel_env(n_rollout_threads, scenario, seed=1, num_agents=3, benchma
     return SubprocVecEnv([get_env_fn(i) for i in range(n_rollout_threads)])
 
 
-def make_env(scenario_name, num_agents=3, benchmark=False):
+def make_env(scenario_name, num_agents=3, num_landmarks=3, benchmark=False):
     '''
     Creates a MultiAgentEnv object as env. This can be used similar to a gym
     environment by calling env.reset() and env.step().
@@ -42,7 +42,7 @@ def make_env(scenario_name, num_agents=3, benchmark=False):
     scenario = scenarios.load(scenario_name + ".py").Scenario()
     # create world
     #print('Create world')
-    world = scenario.make_world(num_agents)
+    world = scenario.make_world(num_agents,num_landmarks)
     # create multiagent environment
     #print('Create multiagent environment')
     if benchmark:

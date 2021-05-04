@@ -26,12 +26,13 @@ class Scenario(BaseScenario):
         for i, landmark in enumerate(world.landmarks):
             if i < num_landmarks:
                 landmark.name = 'landmark %d' % i
-                landmark.collide = True
+                landmark.collide = False
                 landmark.movable = False
             else:
                 landmark.name = 'landmark_estimation %d' % (i-num_landmarks)
                 landmark.collide = False
                 landmark.movable = False
+                landmark.size = 0.02
                 
         # make initial conditions
         self.reset_world(world)
@@ -46,14 +47,14 @@ class Scenario(BaseScenario):
             if i < world.num_landmarks:
                 landmark.color = np.array([0.25, 0.25, 0.25])
             else:
-                landmark.color = np.array([0.25, 0.0, 0.0])
+                landmark.color = np.array([0.55, 0.0, 0.0])
         # set random initial states
         for agent in world.agents:
             agent.state.p_pos = np.random.uniform(-1, +1, world.dim_p)
             agent.state.p_vel = np.zeros(world.dim_p)
             agent.state.c = np.zeros(world.dim_c)
         for i, landmark in enumerate(world.landmarks):
-                landmark.state.p_pos = np.random.uniform(-0.9, +0.9, world.dim_p)
+                landmark.state.p_pos = np.random.uniform(-0.5, +0.5, world.dim_p)
                 landmark.state.p_vel = np.zeros(world.dim_p)
         #Initailize the landmark estimated positions
         world.landmarks_estimated = [Target() for i in range(world.num_landmarks)]
@@ -95,17 +96,18 @@ class Scenario(BaseScenario):
         # Agents are rewarded based on landmarks_estimated covariance_vals, penalized for collisions
         rew = 0.
         
-        for l in enumerate(world.landmarks_estimated):
-            rew -= np.sqrt((l.covariance_vals[0])**2+(l.covariance_vals[1])**2)/10.
-                
+        for l in world.landmarks_estimated:
+            rew -= np.sqrt((l.pf.covariance_vals[0])**2+(l.pf.covariance_vals[1])**2)
+        
+        dists = [np.sqrt(np.sum(np.square(agent.state.p_pos - l.state.p_pos))) for l in world.landmarks[:-world.num_landmarks]]
+        if min(dists) > 2:
+            rew -= 10
+            
         if agent.collide:
             for a in world.agents:
                 if a is agent: continue
                 if self.is_collision(a, agent):
                     rew -= 10.
-            for l in world.landmarks:
-                if self.is_collision(l, agent):
-                    rew -= 10
         return rew
 
     def observation(self, agent, world):
@@ -113,7 +115,6 @@ class Scenario(BaseScenario):
         entity_pos = []
         for i, entity in enumerate(world.landmarks):
             if i < world.num_landmarks: 
-                print('new iteration ',i)
                 # world.entities
                 entity_pos.append(entity.state.p_pos - agent.state.p_pos)
                 
@@ -121,7 +122,7 @@ class Scenario(BaseScenario):
                 #1:Compute radius between the agent and each landmark
                 slant_range = np.sqrt((entity_pos[-1][0])**2+(entity_pos[-1][1])**2)
                 #2:Update the PF
-                world.landmarks_estimated[i].updatePF(dt=600., new_range=True, z=slant_range, myobserver=[agent.state.p_pos[0],0.,agent.state.p_pos[1],0.], update=True)
+                world.landmarks_estimated[i].updatePF(dt=1., new_range=True, z=slant_range, myobserver=[agent.state.p_pos[0],0.,agent.state.p_pos[1],0.], update=True)
                 #3:Publish the new estimated position
                 world.landmarks[i+world.num_landmarks].state.p_pos = [world.landmarks_estimated[i].pf._x[0],world.landmarks_estimated[i].pf._x[2]]
                 
@@ -137,13 +138,12 @@ class Scenario(BaseScenario):
             comm.append(other.state.c)
             other_pos.append(other.state.p_pos - agent.state.p_pos)
         # return np.concatenate([agent.state.p_vel] + [agent.state.p_pos] + entity_pos + other_pos + comm)
-        import pdb; pdb.set_trace()
         return np.concatenate([agent.state.p_vel] + [agent.state.p_pos] + entity_pos + other_pos)
     
     def done(self, agent, world):
         # episodes are done based on the agents minimum distance from a landmark.
         done = False
-        dists = [np.sqrt(np.sum(np.square(agent.state.p_pos - l.state.p_pos))) for l in world.landmarks]
+        dists = [np.sqrt(np.sum(np.square(agent.state.p_pos - l.state.p_pos))) for l in world.landmarks[:-world.num_landmarks]]
         if min(dists) > 2:
             done = True
         return done

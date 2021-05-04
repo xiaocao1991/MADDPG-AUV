@@ -36,6 +36,8 @@ PROGRESS_BAR = True #if we want to render the progress bar
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu") #To run the pytorch tensors on cuda GPU
 # DEVICE = 'cpu'
 
+
+
 def seeding(seed=1):
     np.random.seed(seed)
     torch.manual_seed(seed)
@@ -55,9 +57,9 @@ def pre_process(entity, batchsize):
 def main():
     seeding(seed = SEED)
     # number of parallel agents
-    parallel_envs = 6
+    parallel_envs = 4
     # number of agents per environment
-    num_agents = 6
+    num_agents = 2
     # number of landmarks (or targets) per environment
     num_landmarks = 1
     # number of training episodes.
@@ -73,6 +75,35 @@ def main():
     noise = 0.05 #was 2, try 0.5
     noise_reduction = 0.999
 
+    #print hyperparameters    
+    print('Hyperparameters:')
+    print('BUFFER_SIZE          =  ',BUFFER_SIZE)
+    print('BATCH_SIZE           =  ',BATCH_SIZE)
+    print('GAMMA                =  ',GAMMA)
+    print('TAU                  =  ',TAU)
+    print('LR_ACTOR             =  ',LR_ACTOR)
+    print('LR_CRITIC            =  ',LR_CRITIC)
+    print('WEIGHT_DECAY         =  ',WEIGHT_DECAY)
+    print('UPDATE_EVERY         =  ',UPDATE_EVERY)
+    print('UPDATE_TIMES         =  ',UPDATE_TIMES)
+    print('SEED                 =  ',SEED)
+    print('BENCHMARK            =  ',BENCHMARK)
+    print('EXP_REP_BUF          =  ',EXP_REP_BUF)
+    print('PRE_TRAINED          =  ',PRE_TRAINED)
+    print('SCENARIO             =  ',SCENARIO)
+    print('RENDER               =  ',RENDER)
+    print('PROGRESS_BAR         =  ',PROGRESS_BAR)
+    print('DEVICE               =  ',DEVICE)
+    print('parallel_envs        =  ',parallel_envs)
+    print('num_agents           =  ',num_agents)
+    print('num_landmarks        =  ',num_landmarks)
+    print('number_of_episodes   =  ',number_of_episodes)
+    print('episode_length       =  ',episode_length)
+    print('save_interval        =  ',save_interval)
+    print('noise                =  ',noise)
+    print('noise_reduction      =  ',noise_reduction)
+    
+    
     # how many episodes before update
     # episode_per_update = UPDATE_EVERY * parallel_envs
     common_folder = time.strftime(r"/%m%d%y_%H%M%S")
@@ -89,7 +120,7 @@ def main():
     print('Initialize the number of parallel envs in torch')
     torch.set_num_threads(parallel_envs)
     print('Initialize the environments')
-    env = envs.make_parallel_env(parallel_envs, SCENARIO, seed = SEED, num_agents=num_agents, benchmark = BENCHMARK)
+    env = envs.make_parallel_env(parallel_envs, SCENARIO, seed = SEED, num_agents=num_agents, num_landmarks=num_landmarks, benchmark = BENCHMARK)
        
     # initialize replay buffer
     if EXP_REP_BUF == False:
