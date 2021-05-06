@@ -54,11 +54,11 @@ def pre_process(entity, batchsize):
 def main():
     seeding(seed = SEED)
     # number of parallel agents
-    parallel_envs = 6
+    parallel_envs = 4
     # number of agents per environment
-    num_agents = 6
+    num_agents = 4
     # number of landmarks (or targets) per environment
-    num_landmarks = 6
+    num_landmarks = 4
     # number of training episodes.
     # change this to higher number to experiment. say 30000.
     number_of_episodes = 400000
@@ -231,7 +231,9 @@ def main():
                 priority = np.zeros(num_agents)
                 for a_i in range(num_agents):
                     if EXP_REP_BUF == False:
+                        print('Get samples from replay buffer')
                         samples = buffer.sample(BATCH_SIZE)
+                        print('Update the MADDPG')
                         priority = maddpg.update(samples, a_i, logger)
                     else:
                         samples, indexes = buffer.sample(BATCH_SIZE)
