@@ -126,7 +126,7 @@ class ParticleFilter(object):
             self.x[i][3] = np.sin(orientation)*v
         self.target_estimation()
         self.initialized = True
-        print('WARNING: Particles initialized')
+        # print('WARNING: Particles initialized')
         return
     
     #Noise parameters can be set by:

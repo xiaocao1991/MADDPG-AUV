@@ -55,7 +55,7 @@ class SubprocVecEnv(VecEnv):
         self.remotes, self.work_remotes = zip(*[Pipe() for _ in range(nenvs)])
         #print('env_wrapper: Process')
         #he possible start methods are 'fork', 'spawn' and 'forkserver'
-        set_start_method('spawn')
+        # set_start_method('spawn')
         self.ps = [Process(target=worker, args=(work_remote, remote, CloudpickleWrapper(env_fn)))
             for (work_remote, remote, env_fn) in zip(self.work_remotes, self.remotes, env_fns)]
         for p in self.ps:
