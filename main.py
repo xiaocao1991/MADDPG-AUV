@@ -21,7 +21,7 @@ TAU         =   0.01     # For soft update of target parameters
 LR_ACTOR    =   1e-3     # Learning rate of the actor
 LR_CRITIC   =   1e-4     # Learning rate of the critic
 WEIGHT_DECAY =  0#1e-5     # L2 weight decay
-UPDATE_EVERY =  30       # How many steps to take before updating target networks
+UPDATE_EVERY =  30        # How many steps to take before updating target networks
 UPDATE_TIMES =  20       # Number of times we update the networks
 SEED = 3                 # Seed for random numbers
 BENCHMARK   =   False
@@ -33,7 +33,7 @@ SCENARIO    =   "simple_spread_ivan"
 RENDER = False #in BSC machines the render doesn't work
 PROGRESS_BAR = True #if we want to render the progress bar
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu") #To run the pytorch tensors on cuda GPU
-# DEVICE = 'cpu'
+#DEVICE = 'cpu'
 
 def seeding(seed=1):
     np.random.seed(seed)
