@@ -2,7 +2,7 @@
 Modified from OpenAI Baselines code to work with multi-agent envs
 """
 import numpy as np
-from multiprocessing import Process, Pipe
+from multiprocessing import Process, Pipe, set_start_method
 from baselines.common.vec_env import VecEnv, CloudpickleWrapper
 from baselines.common.tile_images import tile_images
 
@@ -54,6 +54,8 @@ class SubprocVecEnv(VecEnv):
         nenvs = len(env_fns)
         self.remotes, self.work_remotes = zip(*[Pipe() for _ in range(nenvs)])
         #print('env_wrapper: Process')
+        #he possible start methods are 'fork', 'spawn' and 'forkserver'
+        set_start_method('spawn')
         self.ps = [Process(target=worker, args=(work_remote, remote, CloudpickleWrapper(env_fn)))
             for (work_remote, remote, env_fn) in zip(self.work_remotes, self.remotes, env_fns)]
         for p in self.ps:
