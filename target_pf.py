@@ -397,7 +397,7 @@ class ParticleFilter(object):
                 dy = (self.x[i][2] - observer[2])
                 err = np.sqrt(dx**2 + dy**2)
                 sum2 += err
-            print('Evaluation -> distance error: ',abs(sum2/self.particle_number - z))
+            # print('Evaluation -> distance error: ',abs(sum2/self.particle_number - z))
             
             #Evaluate the covariance matrix
             err_x = self.x.T[0]-self._x[0]
@@ -410,7 +410,7 @@ class ParticleFilter(object):
             # Compute tilt of ellipse using first eigenvector
             vec_x, vec_y = vecs[:,0]
             self.covariance_theta = np.arctan2(vec_y,vec_x)
-            print('Evaluation -> covariance (CI of 98): %.2f m(x) %.2f m(y) %.2f deg'%(self.covariance_vals[0],self.covariance_vals[1],np.degrees(self.covariance_theta)))
+            # print('Evaluation -> covariance (CI of 98): %.2f m(x) %.2f m(y) %.2f deg'%(self.covariance_vals[0],self.covariance_vals[1],np.degrees(self.covariance_theta)))
             
             if abs(sum2/self.particle_number - z) > max_error:
             	self.initialized = False
