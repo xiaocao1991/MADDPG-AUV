@@ -59,7 +59,7 @@ def main():
     # number of parallel agents
     parallel_envs = 20
     # number of agents per environment
-    num_agents = 1
+    num_agents = 2
     # number of landmarks (or targets) per environment
     num_landmarks = 1
     # number of training episodes.
@@ -74,6 +74,14 @@ def main():
     # this slowly decreases to 0
     noise = 0.05 #was 2, try 0.5
     noise_reduction = 0.999
+    
+    # how many episodes before update
+    # episode_per_update = UPDATE_EVERY * parallel_envs
+    common_folder = time.strftime(r"/%m%d%y_%H%M%S")
+    log_path = os.getcwd()+common_folder+r"/log"
+    model_dir= os.getcwd()+common_folder+r"/model_dir"
+    
+    os.makedirs(model_dir, exist_ok=True)
 
     #print hyperparameters    
     print('Hyperparameters:')
@@ -102,15 +110,9 @@ def main():
     print('save_interval        =  ',save_interval)
     print('noise                =  ',noise)
     print('noise_reduction      =  ',noise_reduction)
+    print('Folder name          =  ',common_folder)
     
     
-    # how many episodes before update
-    # episode_per_update = UPDATE_EVERY * parallel_envs
-    common_folder = time.strftime(r"/%m%d%y_%H%M%S")
-    log_path = os.getcwd()+common_folder+r"/log"
-    model_dir= os.getcwd()+common_folder+r"/model_dir"
-    
-    os.makedirs(model_dir, exist_ok=True)
     
     if BENCHMARK:
         benchmark_dir = os.getcwd()+common_folder+r"/benchmark_dir"
@@ -165,7 +167,7 @@ def main():
     if PROGRESS_BAR == True:
         import tqdm
         #initializing progress bar object
-        timer_bar = tqdm.tqdm(range(number_of_episodes),desc='\rEpisode',position=0)
+        timer_bar = tqdm.tqdm(range(number_of_episodes),desc='\r\n Episode',position=0)
         
     for episode in range(0, number_of_episodes, parallel_envs):
 
