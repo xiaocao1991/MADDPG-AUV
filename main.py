@@ -231,9 +231,9 @@ def main():
                 priority = np.zeros(num_agents)
                 for a_i in range(num_agents):
                     if EXP_REP_BUF == False:
-                        print('Get samples from replay buffer')
+                        # print('Get samples from replay buffer')
                         samples = buffer.sample(BATCH_SIZE)
-                        print('Update the MADDPG')
+                        # print('Update the MADDPG')
                         priority = maddpg.update(samples, a_i, logger)
                     else:
                         samples, indexes = buffer.sample(BATCH_SIZE)

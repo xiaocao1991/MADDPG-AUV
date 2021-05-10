@@ -94,26 +94,26 @@ class MADDPG:
         agent.critic_optimizer.zero_grad()
 
         # ---------------------------- update critic ---------------------------- #
-        print('Update Critic network')
+        # print('Update Critic network')
         # Get predicted next-state actions and Q values from target models
         #critic loss = batch mean of (y- Q(s,a) from target network)^2
         #y = reward of this timestep + discount * Q(st+1,at+1) from target network
         target_actions_next = self.target_act(next_obs) 
-        print('torch cat')
+        # print('torch cat')
         target_actions_next = torch.cat(target_actions_next, dim=1)
         # target_critic_input = torch.cat((next_obs_full.t(),target_actions_next), dim=1).to(self.device)
-        print('Create target critick input')
+        # print('Create target critick input')
         target_critic_input = torch.cat((next_obs_full,target_actions_next), dim=1).to(self.device)
         with torch.no_grad():
-            print('Get predicted next-state actions')
+            # print('Get predicted next-state actions')
             q_next = agent.target_critic(target_critic_input)
         
         # Compute Q targets (y) for current states (y_i)
-        print('Compute Q targets')
+        # print('Compute Q targets')
         y = reward[agent_number].view(-1, 1).to(self.device) + self.discount_factor * q_next * (1 - done[agent_number].view(-1, 1)).to(self.device)
 
         # Compute Q expected (q) 
-        print('Compute Q expected')
+        # print('Compute Q expected')
         action = torch.cat(action, dim=1)
         # critic_input = torch.cat((obs_full.t(), action), dim=1).to(self.device)
         critic_input = torch.cat((obs_full, action), dim=1).to(self.device)
@@ -129,12 +129,12 @@ class MADDPG:
         # huber_loss = torch.nn.SmoothL1Loss()
         # critic_loss = huber_loss(q, y.detach())
         # Compute critic loss
-        print('Compute critic loss')
+        # print('Compute critic loss')
         loss_mse = torch.nn.MSELoss()
         critic_loss = loss_mse(q, y.detach())
         
         # Minimize the loss
-        print('Compute backward')
+        # print('Compute backward')
         critic_loss.backward()
         torch.nn.utils.clip_grad_norm_(agent.critic.parameters(), 0.5)
         agent.critic_optimizer.step()
