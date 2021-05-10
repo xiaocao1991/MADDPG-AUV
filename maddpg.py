@@ -99,6 +99,7 @@ class MADDPG:
         #critic loss = batch mean of (y- Q(s,a) from target network)^2
         #y = reward of this timestep + discount * Q(st+1,at+1) from target network
         target_actions_next = self.target_act(next_obs) 
+        print('torch cat')
         target_actions_next = torch.cat(target_actions_next, dim=1)
         # target_critic_input = torch.cat((next_obs_full.t(),target_actions_next), dim=1).to(self.device)
         print('Create target critick input')
