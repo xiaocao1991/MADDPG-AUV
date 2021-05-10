@@ -31,7 +31,7 @@ PRE_TRAINED =   False    # Use a previouse trained network as imput weights
 #Scenario used to train the networks
 # SCENARIO    =   "simple_spread_ivan" 
 SCENARIO    =   "simple_track_ivan" 
-RENDER = False #in BSC machines the render doesn't work
+RENDER = True #in BSC machines the render doesn't work
 PROGRESS_BAR = True #if we want to render the progress bar
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu") #To run the pytorch tensors on cuda GPU
 # DEVICE = 'cpu'
@@ -57,9 +57,9 @@ def pre_process(entity, batchsize):
 def main():
     seeding(seed = SEED)
     # number of parallel agents
-    parallel_envs = 4
+    parallel_envs = 1
     # number of agents per environment
-    num_agents = 2
+    num_agents = 1
     # number of landmarks (or targets) per environment
     num_landmarks = 1
     # number of training episodes.
@@ -146,19 +146,6 @@ def main():
         for i in range(num_agents):
             agent_info.append((0,0,0,0))  # placeholder for benchmarking info
     
-    # training loop
-    # show progressbar
-    #import progressbar as pb
-    #widget = ['\repisode: ', pb.Counter(),'/',str(number_of_episodes),' ', 
-    #          pb.Percentage(), ' ', pb.ETA(), ' ', pb.Bar(marker=pb.RotatingMarker()), ' ' ]
-    #timer = pb.ProgressBar(widgets=widget, maxval=number_of_episodes).start()
-    
-    if PROGRESS_BAR == True:
-        import tqdm
-        #initializing progress bar object
-        timer_bar = tqdm.tqdm(range(number_of_episodes),desc='\rEpisode',position=0)
-    
-    
     
     if PRE_TRAINED == True:
         # trained_checkpoint = r'E:\Ivan\UPC\UDACITY\DRL_Nanodegree\Part4\MADDPG\032621_224252\model_dir\episode-99000.pt' #test1 6 agents
@@ -173,7 +160,13 @@ def main():
             maddpg.maddpg_agent[i].actor.load_state_dict(aux[i]['actor_params'])
             maddpg.maddpg_agent[i].critic.load_state_dict(aux[i]['critic_params'])
     
-    print('Starting iterations...')
+    print('Starting iterations... \r\n')
+    #show progress bar
+    if PROGRESS_BAR == True:
+        import tqdm
+        #initializing progress bar object
+        timer_bar = tqdm.tqdm(range(number_of_episodes),desc='\rEpisode',position=0)
+        
     for episode in range(0, number_of_episodes, parallel_envs):
 
         if PROGRESS_BAR == True:

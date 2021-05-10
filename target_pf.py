@@ -452,7 +452,7 @@ class Target(object):
                 self.pf.init_particles(position=myobserver, slantrange=z)
                 
             #we save the current particle positions to plot as the old ones
-            self.pf.oldx = self.pf.x+0. 
+            self.pf.oldx = self.pf.x.copy() 
             
             # Predict step (move all particles)
             self.pf.predict(dt)
@@ -468,5 +468,5 @@ class Target(object):
             # We compute the average of all particles to fint the target
             self.pf.target_estimation()
         #Save position
-        self.position = self.pf._x
+        self.position = self.pf._x.copy()
         return True

@@ -97,7 +97,9 @@ class Scenario(BaseScenario):
         rew = 0.
         
         for l in world.landmarks_estimated:
-            rew -= np.sqrt((l.pf.covariance_vals[0])**2+(l.pf.covariance_vals[1])**2)
+            cov = np.sqrt((l.pf.covariance_vals[0])**2+(l.pf.covariance_vals[1])**2)
+            # print('COV=',cov)
+            rew -= cov
         
         dists = [np.sqrt(np.sum(np.square(agent.state.p_pos - l.state.p_pos))) for l in world.landmarks[:-world.num_landmarks]]
         if min(dists) > 2:
@@ -121,7 +123,10 @@ class Scenario(BaseScenario):
                 #Update the landmarks_estiamted position using Particle Fileter
                 #1:Compute radius between the agent and each landmark
                 slant_range = np.sqrt((entity_pos[-1][0])**2+(entity_pos[-1][1])**2)
+                # Add some noise in the measured range
+                slant_range += np.random.uniform(-0.001, +0.001)
                 #2:Update the PF
+                # print('srange=',slant_range)
                 world.landmarks_estimated[i].updatePF(dt=1., new_range=True, z=slant_range, myobserver=[agent.state.p_pos[0],0.,agent.state.p_pos[1],0.], update=True)
                 #3:Publish the new estimated position
                 world.landmarks[i+world.num_landmarks].state.p_pos = [world.landmarks_estimated[i].pf._x[0],world.landmarks_estimated[i].pf._x[2]]
