@@ -44,7 +44,7 @@ class DDPGAgent():
     def target_act(self, obs, noise=0.0):
         print('obs.to(self.device)')
         obs = obs.to(self.device)
-        print('self.target_actor(obs)')
+        print('self.target_actor(obs)',obs)
         act= self.target_actor(obs)
         print('act.cpu()')
         action = act.cpu()
