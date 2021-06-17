@@ -35,6 +35,9 @@ EXP_REP_BUF =   False     # Experienced replay buffer activation
 PRE_TRAINED =   False    # Use a previouse trained network as imput weights
 #Scenario used to train the networks
 SCENARIO    =   "simple_track_ivan" 
+RENDER = True #in BSC machines the render doesn't work
+PROGRESS_BAR = True #if we want to render the progress bar
+DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu") #To run the pytorch tensors on cuda GPU
 
 def seeding(seed=1):
     np.random.seed(seed)
@@ -45,14 +48,16 @@ def main():
     # number of parallel agents
     parallel_envs = 1
     # number of agents per environment
-    num_agents = 2
+    num_agents = 1
+    # number of landmarks (or targets) per environment
+    num_landmarks = 1
     
     # initialize environment
     torch.set_num_threads(parallel_envs)
-    env = envs.make_parallel_env(parallel_envs, SCENARIO, seed = SEED, num_agents=num_agents, benchmark = BENCHMARK)
+    env = envs.make_parallel_env(parallel_envs, SCENARIO, seed = SEED, num_agents=num_agents, num_landmarks=num_landmarks, benchmark = BENCHMARK)
        
     # initialize policy and critic
-    maddpg = MADDPG(num_agents = num_agents, discount_factor=GAMMA, tau=TAU, lr_actor=LR_ACTOR, lr_critic=LR_CRITIC, weight_decay=WEIGHT_DECAY)
+    maddpg = MADDPG(num_agents = num_agents, num_landmarks = num_landmarks, discount_factor=GAMMA, tau=TAU, lr_actor=LR_ACTOR, lr_critic=LR_CRITIC, weight_decay=WEIGHT_DECAY, device = DEVICE)
     agents_reward = []
     for n in range(num_agents):
         agents_reward.append([])
@@ -68,8 +73,8 @@ def main():
         # trained_checkpoint = r'E:\Ivan\UPC\UDACITY\DRL_Nanodegree\Part4\MADDPG\040521_000716\model_dir\episode-111000.pt' #test1 6 agents new reward function
         # trained_checkpoint = r'E:\Ivan\UPC\UDACITY\DRL_Nanodegree\Part4\MADDPG\040621_143510\model_dir\episode-153000.pt' #test1 6 agents new new reward function
         # trained_checkpoint = r'E:\Ivan\UPC\UDACITY\DRL_Nanodegree\Part4\MADDPG\040921_222255\model_dir\episode-299994.pt' #test1 6 agents new new reward function new positive reward
-        trained_checkpoint = r'E:\Ivan\UPC\UDACITY\DRL_Nanodegree\Part4\MADDPG\041321_204450\model_dir\episode-196002.pt' #test1 6 agents new new reward function new positive reward and pretrined 
-        
+        # trained_checkpoint = r'E:\Ivan\UPC\UDACITY\DRL_Nanodegree\Part4\MADDPG\041321_204450\model_dir\episode-196002.pt' #test1 6 agents new new reward function new positive reward and pretrined 
+        trained_checkpoint = r'E:\Ivan\UPC\GitHub\MADDPG-AUV\051021_140623\model_dir\episode-107000.pt' #first test with PF with one agent and one landmark
         aux = torch.load(trained_checkpoint)
         for i in range(num_agents):  
             # load the weights from file

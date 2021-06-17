@@ -32,7 +32,7 @@ class Scenario(BaseScenario):
                 landmark.name = 'landmark_estimation %d' % (i-num_landmarks)
                 landmark.collide = False
                 landmark.movable = False
-                landmark.size = 0.02
+                landmark.size = 0.002
                 
         # make initial conditions
         self.reset_world(world)
@@ -96,9 +96,10 @@ class Scenario(BaseScenario):
         # Agents are rewarded based on landmarks_estimated covariance_vals, penalized for collisions
         rew = 0.
         
-        for l in world.landmarks_estimated:
+        for i,l in enumerate(world.landmarks_estimated):
             cov = np.sqrt((l.pf.covariance_vals[0])**2+(l.pf.covariance_vals[1])**2)
             # print('COV=',cov)
+            world.landmarks.size = 1
             rew -= cov
         
         dists = [np.sqrt(np.sum(np.square(agent.state.p_pos - l.state.p_pos))) for l in world.landmarks[:-world.num_landmarks]]
