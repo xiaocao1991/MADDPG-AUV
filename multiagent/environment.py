@@ -97,7 +97,13 @@ class MultiAgentEnv(gym.Env):
             done_n.append(self._get_done(agent))
 
             info_n['n'].append(self._get_info(agent))
-
+            
+        # update landmark_estimation size vased on covariance matrix
+        for i in range(int(len(self.world.landmarks)/2)):
+            self.world.entities[self.world.num_agents + self.world.num_landmarks + i].size = self.world.cov[i] 
+        self._reset_render() # we need to reset the render, ifnot the changes made in landmark.size doesn't appears
+            
+            
         # all agents get total reward in cooperative case
         reward = np.sum(reward_n)
         if self.shared_reward:
@@ -241,6 +247,8 @@ class MultiAgentEnv(gym.Env):
                 xform = rendering.Transform()
                 if 'agent' in entity.name:
                     geom.set_color(*entity.color, alpha=0.5)
+                elif 'landmark_estimation' in entity.name:
+                    geom.set_color(*entity.color, alpha=0.2)
                 else:
                     geom.set_color(*entity.color)
                 geom.add_attr(xform)

@@ -100,7 +100,7 @@ def main():
         next_obs, rewards, dones, info = env.step(actions_for_env)
         # update the score (for each agent)
         scores += np.sum(rewards)            
-        print ('\r\n Rewards at step %i = %.3f'%(t,scores))
+        # print ('\r\n Rewards at step %i = %.3f'%(t,scores))
         # roll over states to next time step                    
         obs = next_obs                              
         # print("Score: {}".format(scores))

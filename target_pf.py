@@ -48,7 +48,7 @@ class ParticleFilter(object):
         self.w = np.ones(particle_number)
         
         #Covariance of the result
-        self.covariance_vals = [0.,0.]
+        self.covariance_vals = [0.02,0.02]
         self.covariance_theta = 0.
         
         #Flag to initialize the particles
@@ -254,7 +254,11 @@ class ParticleFilter(object):
                         
         #method = 2 #NO compound method
         #method = 3.2 #compound method
-        method = 3 #compound method presented in OCEANS'18 Kobe
+        
+        if self._x[0] == 0 and self._x[2] == 0:
+            method = 2
+        else:
+            method = 2 #compound method presented in OCEANS'18 Kobe
         
         if method == 1:   
             # 4- resampling with a sample probability proportional
@@ -431,18 +435,25 @@ class Target(object):
         #Target parameters
         self.method = method
         
-        #PF initialization
-        self.pxs=[]
+        ############## PF initialization #######################################################################
         #Our particle filter will maintain a set of n random guesses (particles) where 
         #the target might be. Each guess (or particle) is a vector containing [x,vx,y,vy]
         # create a set of particles
         # sense_noise is not used in area-only
         self.pf = ParticleFilter(std_range=.01,init_velocity=.001,dimx=4,particle_number=6000,method=method,max_pf_range=max_pf_range)
-        self.pf.set_noise(forward_noise = 0.0001, turn_noise = 0.001, sense_noise=.05, velocity_noise = 0.0001)
-        self.position = [0.,0.,0.,0.]
-
+        self.pf.set_noise(forward_noise = 0.0001, turn_noise = 0.1, sense_noise=.05, velocity_noise = 0.0001)
+        self.pfxs = [0.,0.,0.,0.]
+        
+        #############LS initialization###########################################################################
+        self.lsxs=[]
+        self.eastingpoints_LS=[]
+        self.northingpoints_LS=[]
+        self.Plsu=np.array([])
+        self.allz=[]
     
-    # Particle Filter                                
+    #############################################################################################
+    ####            Particle Filter Algorithm  (PF)                                             ##         
+    #############################################################################################                               
     def updatePF(self,dt,new_range,z,myobserver,update=True):
         max_error = 1.
         if update == True:
@@ -468,5 +479,65 @@ class Target(object):
             # We compute the average of all particles to fint the target
             self.pf.target_estimation()
         #Save position
-        self.position = self.pf._x.copy()
+        self.pfxs = self.pf._x.copy()
+        return True
+
+    #############################################################################################
+    ####             Least Squares Algorithm  (LS)                                             ##         
+    #############################################################################################
+    def updateLS(self,dt,new_range,z,myobserver):
+        num_ls_points_used = 30
+        #Propagate current target state estimate
+        if new_range == True:
+            self.allz.append(z)
+            self.eastingpoints_LS.append(myobserver[0])
+            self.northingpoints_LS.append(myobserver[2])
+        numpoints = len(self.eastingpoints_LS)
+        if numpoints > 3:
+            #Unconstrained Least Squares (LS-U) algorithm 2D
+            #/P_LS-U = N0* = N(A^T A)^-1 A^T b
+            #where:
+            P=np.matrix([self.eastingpoints_LS[-num_ls_points_used:],self.northingpoints_LS[-num_ls_points_used:]])
+            # N is:
+            N = np.concatenate((np.identity(2),np.matrix([np.zeros(2)]).T),axis=1)
+            # A is:
+            num = len(self.eastingpoints_LS[-num_ls_points_used:])
+            A = np.concatenate((2*P.T,np.matrix([np.zeros(num)]).T-1),axis=1)
+            # b is:
+            b = np.matrix([np.diag(P.T*P)-np.array(self.allz[-num_ls_points_used:])*np.array(self.allz[-num_ls_points_used:])]).T
+            # Then using the formula "/P_LS-U" the position of the target is:
+            try:
+                self.Plsu = N*(A.T*A).I*A.T*b
+            except:
+                print('WARNING: LS singular matrix')
+            # Finally we calculate the depth as follows
+#                r=np.matrix(np.power(allz,2)).T
+#                a=np.matrix(np.power(Plsu[0]-eastingpoints_LS,2)).T
+#                b=np.matrix(np.power(Plsu[1]-northingpoints_LS,2)).T
+#                depth = np.sqrt(np.abs(r-a-b))
+#                depth = np.mean(depth)
+#                Plsu = np.concatenate((Plsu.T,np.matrix(depth)),axis=1).T
+            #add offset
+#                Plsu[0] = Plsu[0] + t_position.item(0)
+#                Plsu[1] = Plsu[1] + t_position.item(1)
+#                eastingpoints = eastingpoints + t_position.item(0)
+#                northingpoints = northingpoints + t_position.item(1)
+            #Error in 'm'
+#                error = np.concatenate((t_position.T,np.matrix(simdepth)),axis=1).T - Plsu
+#                allerror = np.append(allerror,error,axis=1)
+
+        #Compute MAP orientation and save position
+        try:
+            ls_orientation = np.arctan2(self.Plsu[1]-self.lsxs[-1][2],self.Plsu[1]-self.lsxs[-1][0])
+        except IndexError:
+            ls_orientation = 0
+        try:
+            ls_velocity = np.array([(self.Plsu[0]-self.lsxs[-1][0])/dt,(self.Plsu[1]-self.lsxs[-1][1])/dt])
+        except IndexError:
+            ls_velocity = np.array([0,0])
+        try:
+            ls_position = np.array([self.Plsu.item(0),ls_velocity.item(0),self.Plsu.item(1),ls_velocity.item(1),ls_orientation.item(0)])
+        except IndexError:
+            ls_position = np.array([myobserver[0],ls_velocity[0],myobserver[2],ls_velocity[1],ls_orientation])
+        self.lsxs.append(ls_position)
         return True
