@@ -127,12 +127,9 @@ class Scenario(BaseScenario):
         entity_pos = []
         for i, entity in enumerate(world.landmarks):
             if i < world.num_landmarks: 
-                # world.entities
-                entity_pos.append(entity.state.p_pos - agent.state.p_pos)
-                
                 #Update the landmarks_estiamted position using Particle Fileter
                 #1:Compute radius between the agent and each landmark
-                slant_range = np.sqrt((entity_pos[-1][0])**2+(entity_pos[-1][1])**2)
+                slant_range = np.sqrt(((entity.state.p_pos - agent.state.p_pos)[0])**2+((entity.state.p_pos - agent.state.p_pos)[1])**2)
                 # Add some systematic error in the measured range
                 slant_range *= 0.99 # where 0.99 = 1% of sound speed difference = 1495 m/s
                 # Add some noise in the measured range
@@ -151,10 +148,15 @@ class Scenario(BaseScenario):
                 # plt.xlim(-1,1)
                 # plt.ylim(-1,1)
                 # plt.show()
-
                 #3:Publish the new estimated position
                 # world.landmarks[i+world.num_landmarks].state.p_pos = [world.landmarks_estimated[i].pfxs[-1][0],world.landmarks_estimated[i].pfxs[-1][2]] #Using PF
                 world.landmarks[i+world.num_landmarks].state.p_pos = [world.landmarks_estimated[i].lsxs[-1][0],world.landmarks_estimated[i].lsxs[-1][2]] #Using LS
+                
+                #Append the position of the landmark to generate the observation state
+                #Using the true landmark position
+                # entity_pos.append(entity.state.p_pos - agent.state.p_pos)
+                #Using the estimated landmark position
+                entity_pos.append(world.landmarks[i+world.num_landmarks].state.p_pos - agent.state.p_pos)
                 
         # entity colors
         entity_color = []

@@ -173,7 +173,7 @@ def main():
 
         if PROGRESS_BAR == True:
             #timer.update(episode)
-            timer_bar.update()
+            timer_bar.update(parallel_envs)
 
         #Reset the environment
         all_obs = env.reset() 
