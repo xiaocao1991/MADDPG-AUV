@@ -23,13 +23,19 @@ class MADDPG:
         #                      DDPGAgent(18, 64, 32, 2, 24, 64, 32, lr_actor=lr_actor, lr_critic=lr_critic, weight_decay=weight_decay), 
         #                      DDPGAgent(18, 64, 32, 2, 24, 64, 32, lr_actor=lr_actor, lr_critic=lr_critic, weight_decay=weight_decay)]
         #layers configuration
-        in_actor = num_landmarks*2 + (num_agents-1)*2 + 2+2 #x-y of landmarks + x-y and x-ycoms of others + x-y and x-yvelocity of current agent
+        in_actor = num_landmarks*2 + (num_agents-1)*2 + 2+2 #x-y of landmarks + x-y of others + x-y and x-y velocity of current agent
         hidden_in_actor = in_actor*15
         hidden_out_actor = int(hidden_in_actor/2)
         out_actor = 2 #each agent have 2 continuous actions on x-y plane
-        in_critic = in_actor * num_agents + out_actor * num_agents # the critic input is all agents concatenated
-        hidden_in_critic = in_critic * 4
+        in_critic = in_actor * num_agents # the critic input is all agents concatenated
+        hidden_in_critic = in_critic * 4 + out_actor * num_agents
         hidden_out_critic = int(hidden_in_critic/2)
+        #RNN
+        rnn_num_layers = 2 #two stacked RNN to improve the performance (default = 1)
+        rnn_hidden_size_actor = hidden_in_actor
+        rnn_hidden_size_critic = hidden_in_critic - out_actor * num_agents
+        
+        
         
         print('Actor NN configuration:')
         print('Input nodes number:            ',in_actor)
@@ -42,7 +48,7 @@ class MADDPG:
         print('Hidden 2nd layer nodes number: ',hidden_out_critic)
         print('Output nodes number:           ',out_actor)
         
-        self.maddpg_agent = [DDPGAgent(in_actor, hidden_in_actor, hidden_out_actor, out_actor, in_critic, hidden_in_critic, hidden_out_critic, lr_actor=lr_actor, lr_critic=lr_critic, weight_decay=weight_decay, device=device) for _ in range(num_agents)]
+        self.maddpg_agent = [DDPGAgent(in_actor, hidden_in_actor, hidden_out_actor, out_actor, in_critic, hidden_in_critic, hidden_out_critic, rnn_num_layers, rnn_hidden_size_actor, rnn_hidden_size_critic, lr_actor=lr_actor, lr_critic=lr_critic, weight_decay=weight_decay, device=device) for _ in range(num_agents)]
         # self.maddpg_agent = [DDPGAgent(14, 128, 128, 2, 48, 128, 128, lr_actor=lr_actor, lr_critic=lr_critic, weight_decay=weight_decay, device=device) for _ in range(num_agents)]
         
         self.discount_factor = discount_factor
@@ -94,8 +100,6 @@ class MADDPG:
         # obs, obs_full, action, reward, next_obs, next_obs_full, done = map(transpose_to_tensor, samples)
         obs, action, reward, next_obs, done = map(transpose_to_tensor, samples)
         
-        # import pdb; pdb.set_trace()
-        
         # obs_full = torch.stack(obs_full)
         # next_obs_full = torch.stack(next_obs_full)
         
@@ -112,9 +116,11 @@ class MADDPG:
         target_actions_next = self.target_act(next_obs) 
         target_actions_next = torch.cat(target_actions_next, dim=1)
         # target_critic_input = torch.cat((next_obs_full.t(),target_actions_next), dim=1).to(self.device)
-        target_critic_input = torch.cat((next_obs_full,target_actions_next), dim=1).to(self.device)
+        # target_critic_input = torch.cat((next_obs_full,target_actions_next), dim=1).to(self.device)
+        target_critic_input_1 = next_obs_full.to(self.device)
+        target_critic_input_2 = target_actions_next.to(self.device)
         with torch.no_grad():
-            q_next = agent.target_critic(target_critic_input)
+            q_next = agent.target_critic(target_critic_input_1, target_critic_input_2)
         
         # Compute Q targets (y) for current states (y_i)
     
@@ -123,8 +129,10 @@ class MADDPG:
         # Compute Q expected (q) 
         action = torch.cat(action, dim=1)
         # critic_input = torch.cat((obs_full.t(), action), dim=1).to(self.device)
-        critic_input = torch.cat((obs_full, action), dim=1).to(self.device)
-        q = agent.critic(critic_input)
+        input_1 = obs_full.to(self.device)
+        input_2 = action.to(self.device)
+        # critic_input = torch.cat((obs_full, action), dim=1).to(self.device)
+        q = agent.critic(input_1, input_2)
         
          # Priorized Experience Replay
         # aux = abs(q - y.detach()) + 0.1 #we introduce a fixed small constant number to avoid priorities = 0.
@@ -149,7 +157,7 @@ class MADDPG:
         # Compute actor loss
         agent.actor_optimizer.zero_grad()
         # make input to agent
-        curr_q_input = self.maddpg_agent[agent_number].actor(obs[agent_number].to(self.device))
+        curr_q_input = self.maddpg_agent[agent_number].actor(obs[agent_number].to(self.device),0)
         # use Gumbel-Softmax sample
         # curr_q_input = gumbel_softmax(curr_q_input, hard = True) # this should be used only if the action is discrete (for example in comunications, but in general the action is not discrete)
         # detach the other agents to save computation
@@ -158,15 +166,16 @@ class MADDPG:
         #            else self.maddpg_agent[i].actor(ob.to(self.device)).detach()
         #            for i, ob in enumerate(obs) ]
         q_input = [ curr_q_input if i == agent_number \
-                   else self.maddpg_agent[i].actor(ob.to(self.device)).detach()
+                   else self.maddpg_agent[i].actor(ob.to(self.device),0).detach()
                    for i, ob in enumerate(obs) ]
                 
         q_input = torch.cat(q_input, dim=1)
         # combine all the actions and observations for input to critic
         # many of the obs are redundant, and obs[1] contains all useful information already
         # q_input2 = torch.cat((obs_full.t(), q_input), dim=1)
-        q_input2 = torch.cat((obs_full.to(self.device), q_input), dim=1)
-        actor_loss = -agent.critic(q_input2).mean() # get the policy gradient
+        # q_input2 = torch.cat((obs_full.to(self.device), q_input), dim=1)
+        q_input2 = obs_full.to(self.device)
+        actor_loss = -agent.critic(q_input2,q_input).mean() # get the policy gradient
         actor_loss += (curr_q_input).mean()*1e-3 #modification from https://github.com/shariqiqbal2810/maddpg-pytorch/blob/master/algorithms/maddpg.py
         
         # Minimize the loss

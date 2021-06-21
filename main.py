@@ -10,6 +10,7 @@ from tensorboardX import SummaryWriter
 import os
 from utilities import transpose_list, transpose_to_tensor
 import time
+import copy
 
 
 # for saving gif
@@ -35,6 +36,7 @@ RENDER = True #in BSC machines the render doesn't work
 PROGRESS_BAR = True #if we want to render the progress bar
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu") #To run the pytorch tensors on cuda GPU
 # DEVICE = 'cpu'
+HISTORY_LENGTH = 5
 
 
 
@@ -99,6 +101,7 @@ def main():
     print('EXP_REP_BUF          =  ',EXP_REP_BUF)
     print('PRE_TRAINED          =  ',PRE_TRAINED)
     print('SCENARIO             =  ',SCENARIO)
+    print('HISTORY_LENGTH       =  ',HISTORY_LENGTH)
     print('RENDER               =  ',RENDER)
     print('PROGRESS_BAR         =  ',PROGRESS_BAR)
     print('DEVICE               =  ',DEVICE)
@@ -176,7 +179,7 @@ def main():
             timer_bar.update(parallel_envs)
 
         #Reset the environment
-        all_obs = env.reset() 
+        all_obs = env.reset() #[parallel_env, num_agents, observation_state_size], ex: [8,1,6]
         #Reset the noise
         for i in range(num_agents):
             maddpg.maddpg_agent[i].noise.reset()
@@ -184,13 +187,25 @@ def main():
         reward_this_episode = np.zeros((parallel_envs, num_agents))  
         
         # flip the first two indices
-        obs_roll = np.rollaxis(all_obs,1)
-        obs = transpose_list(obs_roll)
+        obs_roll = np.rollaxis(all_obs,1) #[num_agents, parallel_env, observation_state_size]
+        obs = transpose_list(obs_roll) #list of size parallel_env, where each list index is an array of size observation_state_size
         
+        #Initialize history buffer
+        obs_size = obs[0][0].size
+        history = copy.deepcopy(obs)
+        for n in range(parallel_envs):
+            for m in range(num_agents):
+                for i in range(HISTORY_LENGTH-1):
+                    if i == 0:
+                        history[n][m] = history[n][m].reshape(1,obs_size)
+                    aux = obs[n][m].reshape(1,obs_size)
+                    history[n][m] = np.concatenate((history[n][m],aux),axis=0)
+               
         # save info or not
         save_info = ((episode) % save_interval < parallel_envs or episode==number_of_episodes-parallel_envs)
         frames = []
         tmax = 0
+        next_history = copy.deepcopy(history)
         
         
         if save_info == True and RENDER == True:
@@ -201,9 +216,9 @@ def main():
             # get actions
             # explore = only explore for a certain number of episodes
             # action input needs to be transposed
-            actions = maddpg.act(transpose_to_tensor(obs), noise=noise)
+            # actions = maddpg.act(transpose_to_tensor(obs), noise=noise) 
+            actions = maddpg.act(transpose_to_tensor(history), noise=noise)           
             
-    
             actions_array = torch.stack(actions).detach().numpy()
 
             # transpose the list of list
@@ -216,11 +231,19 @@ def main():
             # next_obs, next_obs_full, rewards, dones, info = env.step(actions_for_env)
             next_obs, rewards, dones, info = env.step(actions_for_env)
             # rewards_sum += np.mean(rewards)
+            # Add next_obs to the next_history buffer
+            for n in range(parallel_envs):
+                for m in range(num_agents):
+                    aux = next_obs[n][m].reshape(1,obs_size)
+                    next_history[n][m] = np.concatenate((next_history[n][m],aux),axis=0)
+                    next_history[n][m] = np.delete(next_history[n][m],0,0)
             
             # collect experience
             # add data to buffer
             # transition = (obs, obs_full, actions_for_env, rewards, next_obs, next_obs_full, dones)
-            transition = (obs, actions_for_env, rewards, next_obs, dones)
+            # transition = (obs, actions_for_env, rewards, next_obs, dones)
+            transition = (history, actions_for_env, rewards, next_history, dones)
+            
             if EXP_REP_BUF == False:
                 buffer.push(transition)
             else:
@@ -228,7 +251,8 @@ def main():
             reward_this_episode += rewards
 
             # obs, obs_full = next_obs, next_obs_full
-            obs = next_obs
+            # obs = next_obs
+            history = copy.deepcopy(next_history)
             
             # increment global step counter
             t += parallel_envs

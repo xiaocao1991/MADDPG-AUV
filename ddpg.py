@@ -15,13 +15,13 @@ from OUNoise import OUNoise
 # device = 'cpu'
 
 class DDPGAgent():
-    def __init__(self, in_actor, hidden_in_actor, hidden_out_actor, out_actor, in_critic, hidden_in_critic, hidden_out_critic, lr_actor=1.0e-2, lr_critic=1.0e-2, weight_decay=1.0e-5, device = 'cpu'):
+    def __init__(self, in_actor, hidden_in_actor, hidden_out_actor, out_actor, in_critic, hidden_in_critic, hidden_out_critic, rnn_num_layers, rnn_hidden_size_actor, rnn_hidden_size_critic , lr_actor=1.0e-2, lr_critic=1.0e-2, weight_decay=1.0e-5, device = 'cpu'):
         super(DDPGAgent, self).__init__()
 
-        self.actor = Network(in_actor, hidden_in_actor, hidden_out_actor, out_actor, actor=True).to(device)
-        self.critic = Network(in_critic, hidden_in_critic, hidden_out_critic, 2).to(device)
-        self.target_actor = Network(in_actor, hidden_in_actor, hidden_out_actor, out_actor, actor=True).to(device)
-        self.target_critic = Network(in_critic, hidden_in_critic, hidden_out_critic, 2).to(device)
+        self.actor = Network(in_actor, hidden_in_actor, hidden_out_actor, out_actor, rnn_num_layers, rnn_hidden_size_actor, device,actor=True).to(device)
+        self.critic = Network(in_critic, hidden_in_critic, hidden_out_critic, 2, rnn_num_layers, rnn_hidden_size_critic, device).to(device)
+        self.target_actor = Network(in_actor, hidden_in_actor, hidden_out_actor, out_actor, rnn_num_layers, rnn_hidden_size_actor, device, actor=True).to(device)
+        self.target_critic = Network(in_critic, hidden_in_critic, hidden_out_critic, 2, rnn_num_layers, rnn_hidden_size_critic, device).to(device)
 
         self.noise = OUNoise(out_actor, scale=1.0 )
         self.device = device
@@ -37,12 +37,12 @@ class DDPGAgent():
 
     def act(self, obs, noise=0.0):
         obs = obs.to(self.device)
-        action = self.actor(obs).cpu() + noise*self.noise.noise()
+        action = self.actor(obs,0).cpu() + noise*self.noise.noise()
         action = action.clamp(-1, 1)
         return action
 
     def target_act(self, obs, noise=0.0):
         obs = obs.to(self.device)
-        action = self.target_actor(obs).cpu() + noise*self.noise.noise()
+        action = self.target_actor(obs,0).cpu() + noise*self.noise.noise()
         action = action.clamp(-1, 1)
         return action
