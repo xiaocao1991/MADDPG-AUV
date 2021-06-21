@@ -1,8 +1,0 @@
-
-Initialize the number of parallel envs in torch
-Initialize the environments
-Make parallel env
-Get env fn
-env_wrapper: Process
-env_wrapper: p.daemon
-env_wrapper: p.start
