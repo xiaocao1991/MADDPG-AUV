@@ -20,7 +20,8 @@ class Network(nn.Module):
         self.rnn_hidden_size = rnn_hidden_size
         # Recurrent NN layers (LSTM)
         # self.rnn = nn.RNN(input_size, rnn_hidden_size, rnn_num_layers, batch_first=True)
-        self.rnn = nn.GRU(input_size, rnn_hidden_size, rnn_num_layers, batch_first=True)
+        # self.rnn = nn.GRU(input_size, rnn_hidden_size, rnn_num_layers, batch_first=True)
+        self.rnn = nn.LSTM(input_size, rnn_hidden_size, rnn_num_layers, batch_first=True)
         
         # Linear NN layers
         if actor == True:
@@ -43,7 +44,9 @@ class Network(nn.Module):
             # return a vector of the force
             # RNN
             h0 = torch.zeros(self.rnn_num_layers, x1.size(0), self.rnn_hidden_size).to(self.device) #Initial values for RNN
+            c0 = torch.zeros(self.rnn_num_layers, x1.size(0), self.rnn_hidden_size).to(self.device) #Initial values for RNN
             out, _ = self.rnn(x1,h0)
+            out, _ = self.rnn(x1,(h0,c0))
             # out: batch_size, seq_legnth, hidden_size
             out = out[:,-1,:]
             # out: batch_size, hidden_size
@@ -63,7 +66,9 @@ class Network(nn.Module):
             # RNN
             # import pdb; pdb.set_trace()
             h0 = torch.zeros(self.rnn_num_layers, x1.size(0), self.rnn_hidden_size).to(self.device) #Initial values for RNN
-            out, _ = self.rnn(x1,h0)
+            c0 = torch.zeros(self.rnn_num_layers, x1.size(0), self.rnn_hidden_size).to(self.device) #Initial values for RNN
+            # out, _ = self.rnn(x1,h0)
+            out, _ = self.rnn(x1,(h0,c0))
             # out: batch_size, seq_legnth, hidden_size
             out = out[:,-1,:]
             # out: batch_size, hidden_size
