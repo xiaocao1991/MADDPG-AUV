@@ -112,7 +112,7 @@ class Scenario(BaseScenario):
             rew -= world.error[i]
         
         dists = [np.sqrt(np.sum(np.square(agent.state.p_pos - l.state.p_pos))) for l in world.landmarks[:-world.num_landmarks]]
-        if min(dists) > 2:
+        if min(dists) > 0.8:
             rew -= 10
             
         if agent.collide:
@@ -125,6 +125,7 @@ class Scenario(BaseScenario):
     def observation(self, agent, world):
         # get positions of all entities in this agent's reference frame
         entity_pos = []
+        entity_range = []
         for i, entity in enumerate(world.landmarks):
             if i < world.num_landmarks: 
                 #Update the landmarks_estiamted position using Particle Fileter
@@ -157,6 +158,7 @@ class Scenario(BaseScenario):
                 # entity_pos.append(entity.state.p_pos - agent.state.p_pos)
                 #Using the estimated landmark position
                 entity_pos.append(world.landmarks[i+world.num_landmarks].state.p_pos - agent.state.p_pos)
+                entity_range.append(slant_range)
                 
         # entity colors
         entity_color = []
@@ -170,12 +172,12 @@ class Scenario(BaseScenario):
             comm.append(other.state.c)
             other_pos.append(other.state.p_pos - agent.state.p_pos)
         # return np.concatenate([agent.state.p_vel] + [agent.state.p_pos] + entity_pos + other_pos + comm)
-        return np.concatenate([agent.state.p_vel] + [agent.state.p_pos] + entity_pos + other_pos)
+        return np.concatenate([agent.state.p_vel] + [agent.state.p_pos] + entity_pos + other_pos + [entity_range])
     
     def done(self, agent, world):
         # episodes are done based on the agents minimum distance from a landmark.
         done = False
         dists = [np.sqrt(np.sum(np.square(agent.state.p_pos - l.state.p_pos))) for l in world.landmarks[:-world.num_landmarks]]
-        if min(dists) > 2:
+        if min(dists) > 0.8:
             done = True
         return done
