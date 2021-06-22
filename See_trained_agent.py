@@ -16,6 +16,7 @@ from tensorboardX import SummaryWriter
 import os
 from utilities import transpose_list, transpose_to_tensor
 import time
+import copy
 
 # for saving gif
 import imageio
@@ -29,7 +30,7 @@ LR_CRITIC   =   1e-3     # Learning rate of the critic
 WEIGHT_DECAY =  0 #1e-5     # L2 weight decay
 UPDATE_EVERY =  30       # How many steps to take before updating target networks
 UPDATE_TIMES =  20       # Number of times we update the networks
-SEED = 35                 # Seed for random numbers
+SEED = 3534                 # Seed for random numbers
 BENCHMARK   =   False
 EXP_REP_BUF =   False     # Experienced replay buffer activation
 PRE_TRAINED =   True    # Use a previouse trained network as imput weights
@@ -38,6 +39,7 @@ SCENARIO    =   "simple_track_ivan"
 RENDER = True #in BSC machines the render doesn't work
 PROGRESS_BAR = True #if we want to render the progress bar
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu") #To run the pytorch tensors on cuda GPU
+HISTORY_LENGTH = 5
 
 def seeding(seed=1):
     np.random.seed(seed)
@@ -79,8 +81,8 @@ def main():
         #New tests with PF and LS simple_track_ivan.py 
         # trained_checkpoint = r'E:\Ivan\UPC\GitHub\logs\061721_144815\model_dir\episode-399992.pt' #first test with LS with one agent and one landmark (episode_length=35) This works better, it has learned to stay close to the landmark and make small movements to maintain the error.
         # trained_checkpoint = r'E:\Ivan\UPC\GitHub\logs\061721_222642\model_dir\episode-399006.pt' #second test with LS with one agent and one landmark (episode_length=60) This works a little worst than the previouse, it has a similar behaviour, but it moves lower, and therefore, the error is greater.
-        trained_checkpoint = r'E:\Ivan\UPC\GitHub\logs\061821_105753\model_dir\episode-399992.pt' #third test with LS with one agent and one landmark (episode_length=35) In this case, the observation state is the estimated landmark position instead of the true landmark position as the two previous tests. It works prety well
-        
+        # trained_checkpoint = r'E:\Ivan\UPC\GitHub\logs\061821_105753\model_dir\episode-399992.pt' #third test with LS with one agent and one landmark (episode_length=35) In this case, the observation state is the estimated landmark position instead of the true landmark position as the two previous tests. It works prety well
+        trained_checkpoint = r'E:\Ivan\UPC\GitHub\logs\062121_143934\model_dir\episode-399992.pt' #First test with LS with one agent and one landmark (episode_length=35) In this case, the observation state is the estimated landmark position instead of the true landmark position as the two previous tests. In addition, I implemented a LSTM
         
         aux = torch.load(trained_checkpoint)
         for i in range(num_agents):  
@@ -94,22 +96,44 @@ def main():
     obs_roll = np.rollaxis(all_obs,1)
     obs = transpose_list(obs_roll)
     
+    #Initialize history buffer
+    obs_size = obs[0][0].size
+    history = copy.deepcopy(obs)
+    for n in range(parallel_envs):
+        for m in range(num_agents):
+            for i in range(HISTORY_LENGTH-1):
+                if i == 0:
+                    history[n][m] = history[n][m].reshape(1,obs_size)
+                aux = obs[n][m].reshape(1,obs_size)
+                history[n][m] = np.concatenate((history[n][m],aux),axis=0)
+    next_history = copy.deepcopy(history)
+    
     scores = 0                
     t = 0
     while True:
         env.render('rgb_array')
         t +=1
         # select an action
-        actions = maddpg.act(transpose_to_tensor(obs), noise=0.)                
+        # actions = maddpg.act(transpose_to_tensor(obs), noise=0.)       
+        actions = maddpg.act(transpose_to_tensor(history), noise=0.) 
+         
         actions_array = torch.stack(actions).detach().numpy()
         actions_for_env = np.rollaxis(actions_array,1)
         # send all actions to the environment
         next_obs, rewards, dones, info = env.step(actions_for_env)
+        # Add next_obs to the next_history buffer
+        for n in range(parallel_envs):
+            for m in range(num_agents):
+                aux = next_obs[n][m].reshape(1,obs_size)
+                next_history[n][m] = np.concatenate((next_history[n][m],aux),axis=0)
+                next_history[n][m] = np.delete(next_history[n][m],0,0)
+                    
         # update the score (for each agent)
         scores += np.sum(rewards)            
         # print ('\r\n Rewards at step %i = %.3f'%(t,scores))
-        # roll over states to next time step                    
-        obs = next_obs                              
+        # roll over states to next time step  
+        # obs = next_obs     
+        history = copy.deepcopy(next_history)                          
         # print("Score: {}".format(scores))
         if np.any(dones):
             print('done')

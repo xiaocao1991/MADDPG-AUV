@@ -19,7 +19,8 @@ class Network(nn.Module):
         self.rnn_num_layers = rnn_num_layers
         self.rnn_hidden_size = rnn_hidden_size
         # Recurrent NN layers (LSTM)
-        self.rnn = nn.RNN(input_size, rnn_hidden_size, rnn_num_layers, batch_first=True)
+        # self.rnn = nn.RNN(input_size, rnn_hidden_size, rnn_num_layers, batch_first=True)
+        self.rnn = nn.GRU(input_size, rnn_hidden_size, rnn_num_layers, batch_first=True)
         
         # Linear NN layers
         if actor == True:
