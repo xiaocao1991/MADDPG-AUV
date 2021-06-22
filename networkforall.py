@@ -45,7 +45,7 @@ class Network(nn.Module):
             # RNN
             h0 = torch.zeros(self.rnn_num_layers, x1.size(0), self.rnn_hidden_size).to(self.device) #Initial values for RNN
             c0 = torch.zeros(self.rnn_num_layers, x1.size(0), self.rnn_hidden_size).to(self.device) #Initial values for RNN
-            out, _ = self.rnn(x1,h0)
+            # out, _ = self.rnn(x1,h0)
             out, _ = self.rnn(x1,(h0,c0))
             # out: batch_size, seq_legnth, hidden_size
             out = out[:,-1,:]
