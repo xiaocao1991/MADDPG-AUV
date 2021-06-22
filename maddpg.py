@@ -23,7 +23,7 @@ class MADDPG:
         #                      DDPGAgent(18, 64, 32, 2, 24, 64, 32, lr_actor=lr_actor, lr_critic=lr_critic, weight_decay=weight_decay), 
         #                      DDPGAgent(18, 64, 32, 2, 24, 64, 32, lr_actor=lr_actor, lr_critic=lr_critic, weight_decay=weight_decay)]
         #layers configuration
-        in_actor = num_landmarks*2 + (num_agents-1)*2 + 2+2 #x-y of landmarks + x-y of others + x-y and x-y velocity of current agent
+        # in_actor = num_landmarks*2 + (num_agents-1)*2 + 2+2 #x-y of landmarks + x-y of others + x-y and x-y velocity of current agent
         in_actor = num_landmarks*2 + (num_agents-1)*2 + 2+2 + num_landmarks*num_agents #x-y of landmarks + x-y of others + x-y and x-y velocity of current agent + range to landmarks
         hidden_in_actor = in_actor*15
         hidden_out_actor = int(hidden_in_actor/2)

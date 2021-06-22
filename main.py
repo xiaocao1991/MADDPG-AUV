@@ -32,7 +32,7 @@ PRE_TRAINED =   False    # Use a previouse trained network as imput weights
 #Scenario used to train the networks
 # SCENARIO    =   "simple_spread_ivan" 
 SCENARIO    =   "simple_track_ivan" 
-RENDER = True #in BSC machines the render doesn't work
+RENDER = False #in BSC machines the render doesn't work
 PROGRESS_BAR = True #if we want to render the progress bar
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu") #To run the pytorch tensors on cuda GPU
 # DEVICE = 'cpu'
