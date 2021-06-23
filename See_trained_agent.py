@@ -82,9 +82,13 @@ def main():
         # trained_checkpoint = r'E:\Ivan\UPC\GitHub\logs\061721_144815\model_dir\episode-399992.pt' #first test with LS with one agent and one landmark (episode_length=35) This works better, it has learned to stay close to the landmark and make small movements to maintain the error.
         # trained_checkpoint = r'E:\Ivan\UPC\GitHub\logs\061721_222642\model_dir\episode-399006.pt' #second test with LS with one agent and one landmark (episode_length=60) This works a little worst than the previouse, it has a similar behaviour, but it moves lower, and therefore, the error is greater.
         # trained_checkpoint = r'E:\Ivan\UPC\GitHub\logs\061821_105753\model_dir\episode-399992.pt' #third test with LS with one agent and one landmark (episode_length=35) In this case, the observation state is the estimated landmark position instead of the true landmark position as the two previous tests. It works prety well
+        # RNN
         # trained_checkpoint = r'E:\Ivan\UPC\GitHub\logs\062121_143934\model_dir\episode-399992.pt' #First test with LS with one agent and one landmark (episode_length=35) In this case, the observation state is the estimated landmark position instead of the true landmark position as the two previous tests. In addition, I implemented a RNN
-        trained_checkpoint = r'E:\Ivan\UPC\GitHub\logs\062221_065153\model_dir\episode-399992.pt' #First test with LS with one agent and one landmark (episode_length=35) In this case, the observation state is the estimated landmark position instead of the true landmark position as the two previous tests. In addition, I implemented a GRU
+        # GRU
+        # trained_checkpoint = r'E:\Ivan\UPC\GitHub\logs\062221_065153\model_dir\episode-399992.pt' #First test with LS with one agent and one landmark (episode_length=35) In this case, the observation state is the estimated landmark position instead of the true landmark position as the two previous tests. In addition, I implemented a GRU
+        # LSTM
         # trained_checkpoint = r'E:\Ivan\UPC\GitHub\logs\062221_110542\model_dir\episode-399992.pt' #First test with LS with one agent and one landmark (episode_length=35) In this case, the observation state is the estimated landmark position instead of the true landmark position as the two previous tests. In addition, I implemented a LSTM
+        trained_checkpoint = r'E:\Ivan\UPC\GitHub\logs\062221_230449\model_dir\episode-399992.pt' #First test with LS with one agent and one landmark (episode_length=35) In this case, the observation state is the estimated landmark position instead of the true landmark position as the two previous tests. In addition, I implemented a LSTM, run 2 with some tweaks
         
         aux = torch.load(trained_checkpoint)
         for i in range(num_agents):  

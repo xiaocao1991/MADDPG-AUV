@@ -112,7 +112,7 @@ class Scenario(BaseScenario):
             rew -= world.error[i]
         
         dists = [np.sqrt(np.sum(np.square(agent.state.p_pos - l.state.p_pos))) for l in world.landmarks[:-world.num_landmarks]]
-        if min(dists) > 0.8:
+        if min(dists) > 1.5:
             rew -= 10
             
         if agent.collide:
@@ -172,12 +172,13 @@ class Scenario(BaseScenario):
             comm.append(other.state.c)
             other_pos.append(other.state.p_pos - agent.state.p_pos)
         # return np.concatenate([agent.state.p_vel] + [agent.state.p_pos] + entity_pos + other_pos + comm)
+        # return np.concatenate([agent.state.p_vel] + [agent.state.p_pos] + entity_pos + other_pos)
         return np.concatenate([agent.state.p_vel] + [agent.state.p_pos] + entity_pos + other_pos + [entity_range])
     
     def done(self, agent, world):
         # episodes are done based on the agents minimum distance from a landmark.
         done = False
         dists = [np.sqrt(np.sum(np.square(agent.state.p_pos - l.state.p_pos))) for l in world.landmarks[:-world.num_landmarks]]
-        if min(dists) > 0.8:
+        if min(dists) > 1.5:
             done = True
         return done
